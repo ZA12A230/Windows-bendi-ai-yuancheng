@@ -4,7 +4,7 @@ import { HomePage } from './pages/HomePage';
 import { SettingsPage } from './pages/SettingsPage';
 import { StatusPage } from './pages/StatusPage';
 import { Sidebar } from './components/Sidebar';
-import { AI_MODELS } from '../shared/types';
+import { AI_MODELS, DEFAULT_CONFIG } from '../shared/types';
 
 function App() {
   const {
@@ -13,6 +13,7 @@ function App() {
     setConfig,
     setPerformance,
     setTunnel,
+    setLmStudioInstalled,
   } = useAppStore();
   const [isLoading, setIsLoading] = useState(true);
 
@@ -28,20 +29,22 @@ function App() {
   const initializeApp = async () => {
     try {
       if (window.electronAPI) {
-        const [models, config, perf, tunnelStatus] = await Promise.all([
-          window.electronAPI.ai.getModels(),
+        const [config, perf, tunnelStatus, lmStudioInstalled] = await Promise.all([
           window.electronAPI.config.get(),
           window.electronAPI.performance.getStatus(),
           window.electronAPI.tunnel.getStatus(),
+          window.electronAPI.ai.checkLMStudio(),
         ]);
         
-        setModels(models.length > 0 ? models : AI_MODELS);
         setConfig(config);
+        setModels(AI_MODELS);
         setPerformance(perf);
         setTunnel(tunnelStatus);
+        setLmStudioInstalled(lmStudioInstalled);
       }
     } catch (error) {
       console.error('初始化应用失败:', error);
+      setConfig(DEFAULT_CONFIG);
       setModels(AI_MODELS);
     } finally {
       setIsLoading(false);
@@ -65,17 +68,18 @@ function App() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-300 text-lg">正在加载...</p>
+          <div className="w-20 h-20 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+          <p className="text-slate-300 text-lg font-medium">正在加载 AI 本地部署工具箱...</p>
+          <p className="text-slate-500 text-sm mt-2">初始化系统组件</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <Sidebar />
       <main className="flex-1 p-6 overflow-auto">
         {activeTab === 'home' && <HomePage />}

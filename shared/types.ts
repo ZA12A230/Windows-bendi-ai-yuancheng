@@ -9,12 +9,21 @@ export interface AIModel {
   progress: number;
 }
 
+export interface TunnelConfig {
+  serverAddress: string;
+  serverPort: string;
+  authUsername: string;
+  authPassword: string;
+  localPort: string;
+}
+
 export interface SystemConfig {
   autoStart: boolean;
   runInBackground: boolean;
   enableTunnel: boolean;
   performanceThreshold: number;
   shutdownToSleep: boolean;
+  tunnelConfig: TunnelConfig;
 }
 
 export interface SystemStatus {
@@ -27,61 +36,100 @@ export interface SystemStatus {
 
 export const AI_MODELS: AIModel[] = [
   {
-    id: 'gpt5.5',
-    name: 'GPT 5.5',
-    version: '5.5',
-    description: 'OpenAI最新大语言模型，具备强大的推理和生成能力',
-    downloadUrl: 'https://ollama.com/library/gpt5.5',
-    size: '24GB',
+    id: 'gpt-3.5-turbo',
+    name: 'GPT-3.5-Turbo',
+    version: '3.5',
+    description: 'OpenAI快速响应模型，适合日常对话和简单任务',
+    downloadUrl: 'lm-studio://gpt-3.5-turbo',
+    size: '4GB',
     status: 'idle',
     progress: 0,
   },
   {
-    id: 'claude-opus4.7',
-    name: 'Claude Opus 4.7',
-    version: '4.7',
-    description: 'Anthropic最高级模型，在复杂任务上表现出色',
-    downloadUrl: 'https://ollama.com/library/claude-opus',
-    size: '18GB',
+    id: 'llama-3.1-8b',
+    name: 'Llama 3.1 8B',
+    version: '3.1',
+    description: 'Meta开源大模型，性能优秀，支持中文',
+    downloadUrl: 'lm-studio://llama-3.1-8b',
+    size: '4.7GB',
     status: 'idle',
     progress: 0,
   },
   {
-    id: 'gemini-latest',
-    name: 'Gemini 最新版',
-    version: 'Latest',
-    description: 'Google多模态AI模型，支持图像和文本理解',
-    downloadUrl: 'https://ollama.com/library/gemini',
-    size: '20GB',
+    id: 'qwen-2.5-7b',
+    name: 'Qwen 2.5 7B',
+    version: '2.5',
+    description: '阿里通义千问，中文理解能力强',
+    downloadUrl: 'lm-studio://qwen-2.5-7b',
+    size: '4.4GB',
     status: 'idle',
     progress: 0,
   },
   {
-    id: 'deepseek-r1',
-    name: 'DeepSeek R1',
-    version: 'R1',
-    description: '深度求索推理模型，数学和代码能力强',
-    downloadUrl: 'https://ollama.com/library/deepseek-r1',
-    size: '16GB',
+    id: 'phi-3.5-mini',
+    name: 'Phi-3.5 Mini',
+    version: '3.5',
+    description: '微软小模型，体积小但能力不错',
+    downloadUrl: 'lm-studio://phi-3.5-mini',
+    size: '2.2GB',
     status: 'idle',
     progress: 0,
   },
   {
-    id: 'doubao-latest',
-    name: '豆包 最新版',
-    version: 'Latest',
-    description: '字节跳动AI模型，中文理解和生成能力优秀',
-    downloadUrl: 'https://ollama.com/library/doubao',
-    size: '12GB',
+    id: 'mistral-7b',
+    name: 'Mistral 7B',
+    version: '7B',
+    description: '欧洲顶级开源模型，性能卓越',
+    downloadUrl: 'lm-studio://mistral-7b',
+    size: '4.1GB',
+    status: 'idle',
+    progress: 0,
+  },
+  {
+    id: 'codellama-7b',
+    name: 'CodeLlama 7B',
+    version: '7B',
+    description: '代码专用模型，编程辅助利器',
+    downloadUrl: 'lm-studio://codellama-7b',
+    size: '3.8GB',
+    status: 'idle',
+    progress: 0,
+  },
+  {
+    id: 'deepseek-coder-6.7b',
+    name: 'DeepSeek Coder 6.7B',
+    version: '6.7B',
+    description: '深度求索代码模型，代码能力强',
+    downloadUrl: 'lm-studio://deepseek-coder-6.7b',
+    size: '3.6GB',
+    status: 'idle',
+    progress: 0,
+  },
+  {
+    id: 'yi-1.5-6b',
+    name: 'Yi-1.5 6B',
+    version: '1.5',
+    description: '零一万物模型，中英双语优秀',
+    downloadUrl: 'lm-studio://yi-1.5-6b',
+    size: '3.5GB',
     status: 'idle',
     progress: 0,
   },
 ];
 
+export const DEFAULT_TUNNEL_CONFIG: TunnelConfig = {
+  serverAddress: 'frp.example.com',
+  serverPort: '7000',
+  authUsername: '',
+  authPassword: '',
+  localPort: '1234',
+};
+
 export const DEFAULT_CONFIG: SystemConfig = {
   autoStart: false,
   runInBackground: true,
-  enableTunnel: true,
+  enableTunnel: false,
   performanceThreshold: 80,
   shutdownToSleep: false,
+  tunnelConfig: DEFAULT_TUNNEL_CONFIG,
 };

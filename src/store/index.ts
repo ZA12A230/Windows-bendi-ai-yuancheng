@@ -1,9 +1,10 @@
 import { create } from 'zustand';
-import { AIModel, SystemConfig, DEFAULT_CONFIG, AI_MODELS } from '../../shared/types';
+import { AIModel, SystemConfig, DEFAULT_CONFIG, AI_MODELS, TunnelConfig } from '../../shared/types';
 
 interface AppState {
   models: AIModel[];
   config: SystemConfig;
+  tunnelConfig: TunnelConfig;
   performance: {
     cpuUsage: number;
     memoryUsage: number;
@@ -14,21 +15,22 @@ interface AppState {
     connected: boolean;
     url: string | null;
   };
-  selectedModels: string[];
   activeTab: 'home' | 'settings' | 'status';
+  lmStudioInstalled: boolean;
   setModels: (models: AIModel[]) => void;
   updateModel: (modelId: string, updates: Partial<AIModel>) => void;
   setConfig: (config: SystemConfig) => void;
+  setTunnelConfig: (config: TunnelConfig) => void;
   setPerformance: (perf: Partial<AppState['performance']>) => void;
   setTunnel: (tunnel: Partial<AppState['tunnel']>) => void;
-  toggleModelSelection: (modelId: string) => void;
-  clearSelection: () => void;
   setActiveTab: (tab: 'home' | 'settings' | 'status') => void;
+  setLmStudioInstalled: (installed: boolean) => void;
 }
 
-export const useAppStore = create<AppState>((set, get) => ({
+export const useAppStore = create<AppState>((set) => ({
   models: AI_MODELS,
   config: DEFAULT_CONFIG,
+  tunnelConfig: DEFAULT_CONFIG.tunnelConfig,
   performance: {
     cpuUsage: 0,
     memoryUsage: 0,
@@ -39,8 +41,8 @@ export const useAppStore = create<AppState>((set, get) => ({
     connected: false,
     url: null,
   },
-  selectedModels: [],
   activeTab: 'home',
+  lmStudioInstalled: false,
 
   setModels: (models) => set({ models }),
   
@@ -50,7 +52,9 @@ export const useAppStore = create<AppState>((set, get) => ({
     ),
   })),
   
-  setConfig: (config) => set({ config }),
+  setConfig: (config) => set({ config, tunnelConfig: config.tunnelConfig }),
+  
+  setTunnelConfig: (tunnelConfig) => set({ tunnelConfig }),
   
   setPerformance: (perf) => set((state) => ({
     performance: { ...state.performance, ...perf },
@@ -60,13 +64,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     tunnel: { ...state.tunnel, ...tunnel },
   })),
   
-  toggleModelSelection: (modelId) => set((state) => ({
-    selectedModels: state.selectedModels.includes(modelId)
-      ? state.selectedModels.filter((id) => id !== modelId)
-      : [...state.selectedModels, modelId],
-  })),
-  
-  clearSelection: () => set({ selectedModels: [] }),
-  
   setActiveTab: (tab) => set({ activeTab: tab }),
+  
+  setLmStudioInstalled: (installed) => set({ lmStudioInstalled: installed }),
 }));

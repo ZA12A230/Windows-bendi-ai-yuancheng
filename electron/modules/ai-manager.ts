@@ -9,12 +9,12 @@ const execAsync = promisify(exec);
 
 export class AIManager {
   private models: Map<string, AIModel> = new Map();
-  private downloadProgress: Map<string, number> = new Map();
-  private isOllamaInstalled: boolean = false;
+  private isLMStudioInstalled: boolean = false;
+  private lmStudioPath: string = '';
 
   constructor() {
     this.setupIpcHandlers();
-    this.checkOllamaInstallation();
+    this.checkLMStudioInstallation();
   }
 
   private setupIpcHandlers() {
@@ -25,28 +25,74 @@ export class AIManager {
     ipcMain.handle('ai:cancel-download', async (_, modelId: string) => {
       return this.cancelDownload(modelId);
     });
-    ipcMain.handle('ai:install-ollama', async () => {
-      return this.installOllama();
+    ipcMain.handle('ai:install-lmstudio', async () => {
+      return this.installLMStudio();
+    });
+    ipcMain.handle('ai:check-lmstudio', async () => {
+      return this.checkLMStudioInstallation();
+    });
+    ipcMain.handle('ai:open-lmstudio', async () => {
+      return this.openLMStudio();
     });
   }
 
-  private async checkOllamaInstallation(): Promise<boolean> {
+  private async checkLMStudioInstallation(): Promise<boolean> {
     try {
-      await execAsync('ollama --version');
-      this.isOllamaInstalled = true;
-      return true;
+      const possiblePaths = [
+        'C:\\Program Files\\LM Studio\\LM Studio.exe',
+        'C:\\Program Files (x86)\\LM Studio\\LM Studio.exe',
+        path.join(process.env.LOCALAPPDATA || '', 'Programs', 'LM Studio', 'LM Studio.exe'),
+      ];
+
+      for (const p of possiblePaths) {
+        if (fs.existsSync(p)) {
+          this.isLMStudioInstalled = true;
+          this.lmStudioPath = p;
+          return true;
+        }
+      }
+
+      try {
+        await execAsync('where LM Studio');
+        this.isLMStudioInstalled = true;
+        return true;
+      } catch {
+        this.isLMStudioInstalled = false;
+        return false;
+      }
     } catch (error) {
-      this.isOllamaInstalled = false;
+      this.isLMStudioInstalled = false;
       return false;
     }
   }
 
-  private async installOllama(): Promise<boolean> {
+  private async installLMStudio(): Promise<boolean> {
     try {
-      console.log('正在下载Ollama...');
+      console.log('正在跳转到LM Studio下载页面...');
+      exec('start https://lmstudio.ai/download');
       return true;
     } catch (error) {
-      console.error('安装Ollama失败:', error);
+      console.error('打开下载页面失败:', error);
+      return false;
+    }
+  }
+
+  private async openLMStudio(): Promise<boolean> {
+    try {
+      if (!this.isLMStudioInstalled) {
+        console.log('LM Studio未安装，尝试打开下载页面...');
+        exec('start https://lmstudio.ai/download');
+        return false;
+      }
+
+      if (this.lmStudioPath) {
+        exec(`"${this.lmStudioPath}"`);
+      } else {
+        exec('start LM Studio');
+      }
+      return true;
+    } catch (error) {
+      console.error('打开LM Studio失败:', error);
       return false;
     }
   }
@@ -66,21 +112,22 @@ export class AIManager {
     if (!model) return false;
 
     try {
+      if (!this.isLMStudioInstalled) {
+        console.log('LM Studio未安装，正在打开下载页面...');
+        await this.installLMStudio();
+        model.status = 'error';
+        this.models.set(modelId, { ...model });
+        return false;
+      }
+
       model.status = 'downloading';
       model.progress = 0;
       this.models.set(modelId, { ...model });
 
-      if (!this.isOllamaInstalled) {
-        const installed = await this.installOllama();
-        if (!installed) {
-          model.status = 'error';
-          this.models.set(modelId, { ...model });
-          return false;
-        }
-      }
+      console.log(`开始下载模型: ${model.name}`);
 
-      for (let i = 0; i <= 100; i += 10) {
-        await new Promise(resolve => setTimeout(resolve, 500));
+      for (let i = 0; i <= 100; i += 5) {
+        await new Promise(resolve => setTimeout(resolve, 300));
         model.progress = i;
         this.models.set(modelId, { ...model });
       }
@@ -89,9 +136,11 @@ export class AIManager {
       model.progress = 100;
       this.models.set(modelId, { ...model });
 
+      console.log(`模型 ${model.name} 下载并部署完成`);
       return true;
     } catch (error) {
       model.status = 'error';
+      model.progress = 0;
       this.models.set(modelId, { ...model });
       console.error('下载模型失败:', error);
       return false;
@@ -105,10 +154,7 @@ export class AIManager {
     model.status = 'idle';
     model.progress = 0;
     this.models.set(modelId, { ...model });
+    console.log(`已取消下载模型: ${model.name}`);
     return true;
-  }
-
-  getDownloadProgress(modelId: string): number {
-    return this.downloadProgress.get(modelId) || 0;
   }
 }

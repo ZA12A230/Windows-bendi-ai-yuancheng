@@ -7,8 +7,7 @@ interface ModelCardProps {
 }
 
 export const ModelCard: React.FC<ModelCardProps> = ({ model }) => {
-  const { selectedModels, toggleModelSelection, updateModel } = useAppStore();
-  const isSelected = selectedModels.includes(model.id);
+  const { updateModel } = useAppStore();
 
   const getStatusColor = (status: AIModel['status']) => {
     switch (status) {
@@ -30,19 +29,21 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model }) => {
       case 'downloading':
         return '下载中';
       case 'error':
-        return '错误';
+        return '失败';
       default:
         return '待下载';
     }
   };
 
   const handleDownload = async () => {
+    if (model.status === 'downloading') return;
+    
     if (window.electronAPI) {
       updateModel(model.id, { status: 'downloading', progress: 0 });
+      
       const success = await window.electronAPI.ai.downloadModel(model.id);
-      if (success) {
-        updateModel(model.id, { status: 'installed', progress: 100 });
-      } else {
+      
+      if (!success) {
         updateModel(model.id, { status: 'error', progress: 0 });
       }
     }
@@ -55,83 +56,97 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model }) => {
     }
   };
 
+  const getButtonContent = () => {
+    switch (model.status) {
+      case 'idle':
+        return (
+          <>
+            <span className="text-xl mb-1">⬇️</span>
+            <span>点击下载</span>
+          </>
+        );
+      case 'downloading':
+        return (
+          <>
+            <span className="text-xl mb-1 animate-bounce">⏸️</span>
+            <span>下载中 {model.progress}%</span>
+          </>
+        );
+      case 'installed':
+        return (
+          <>
+            <span className="text-xl mb-1">✅</span>
+            <span>已就绪</span>
+          </>
+        );
+      case 'error':
+        return (
+          <>
+            <span className="text-xl mb-1">❌</span>
+            <span>重试</span>
+          </>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div
-      className={`relative bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border-2 transition-all duration-300 ${
-        isSelected ? 'border-cyan-500 shadow-lg shadow-cyan-500/20' : 'border-slate-700 hover:border-slate-600'
+      onClick={model.status === 'idle' || model.status === 'error' ? handleDownload : model.status === 'downloading' ? handleCancel : undefined}
+      className={`relative bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-5 border-2 transition-all duration-300 cursor-pointer ${
+        model.status === 'installed' 
+          ? 'border-green-500/50 hover:border-green-400' 
+          : model.status === 'downloading'
+          ? 'border-cyan-500 cursor-pointer'
+          : 'border-slate-700 hover:border-cyan-400 hover:shadow-lg hover:shadow-cyan-500/10'
       }`}
     >
-      <div className="flex items-start justify-between mb-4">
-        <div>
-          <h3 className="text-lg font-semibold text-white mb-1">{model.name}</h3>
-          <p className="text-sm text-slate-400">v{model.version}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className={`w-3 h-3 rounded-full ${getStatusColor(model.status)}`}></div>
-          <span className="text-xs text-slate-400">{getStatusText(model.status)}</span>
-        </div>
-      </div>
-
-      <p className="text-slate-300 text-sm mb-4 leading-relaxed">{model.description}</p>
-
-      <div className="flex items-center justify-between mb-4">
-        <span className="text-slate-400 text-sm">大小: {model.size}</span>
-        <input
-          type="checkbox"
-          checked={isSelected}
-          onChange={() => toggleModelSelection(model.id)}
-          className="w-5 h-5 rounded border-slate-600 bg-slate-700 text-cyan-500 focus:ring-cyan-500 focus:ring-offset-slate-800"
-        />
-      </div>
-
       {model.status === 'downloading' && (
-        <div className="mb-4">
-          <div className="flex justify-between text-sm text-slate-400 mb-2">
-            <span>下载进度</span>
-            <span>{model.progress}%</span>
-          </div>
-          <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-300"
-              style={{ width: `${model.progress}%` }}
-            ></div>
-          </div>
-        </div>
+        <div 
+          className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-xl"
+          style={{ width: `${model.progress}%` }}
+        />
       )}
 
-      <div className="flex gap-2">
-        {model.status === 'idle' && (
-          <button
-            onClick={handleDownload}
-            className="flex-1 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white py-2 px-4 rounded-lg font-medium transition-all duration-200"
-          >
-            下载
-          </button>
-        )}
+      <div className="relative z-10">
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex-1">
+            <h3 className="text-lg font-bold text-white mb-1">{model.name}</h3>
+            <p className="text-xs text-slate-400">v{model.version}</p>
+          </div>
+          <div className={`w-3 h-3 rounded-full ${getStatusColor(model.status)} ${model.status === 'downloading' ? 'animate-pulse' : ''}`}></div>
+        </div>
+
+        <p className="text-slate-300 text-sm mb-4 line-clamp-2 leading-relaxed">
+          {model.description}
+        </p>
+
+        <div className="flex items-center justify-between text-xs text-slate-400 mb-4">
+          <span>📦 {model.size}</span>
+          <span>{getStatusText(model.status)}</span>
+        </div>
+
         {model.status === 'downloading' && (
-          <button
-            onClick={handleCancel}
-            className="flex-1 bg-slate-600 hover:bg-slate-500 text-white py-2 px-4 rounded-lg font-medium transition-all duration-200"
-          >
-            取消
-          </button>
+          <div className="mb-4">
+            <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-300 ease-out"
+                style={{ width: `${model.progress}%` }}
+              />
+            </div>
+          </div>
         )}
-        {model.status === 'installed' && (
-          <button
-            className="flex-1 bg-green-600/20 text-green-400 py-2 px-4 rounded-lg font-medium cursor-default"
-            disabled
-          >
-            已安装
-          </button>
-        )}
-        {model.status === 'error' && (
-          <button
-            onClick={handleDownload}
-            className="flex-1 bg-red-600/20 hover:bg-red-600/30 text-red-400 py-2 px-4 rounded-lg font-medium transition-all duration-200"
-          >
-            重试
-          </button>
-        )}
+
+        <div className={`flex items-center justify-center gap-2 py-3 rounded-lg font-medium transition-all ${
+          model.status === 'installed'
+            ? 'bg-green-500/20 text-green-400'
+            : model.status === 'downloading'
+            ? 'bg-slate-700/50 text-slate-300'
+            : 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white hover:from-cyan-500 hover:to-blue-500'
+        }`}>
+          {getButtonContent()}
+        </div>
       </div>
     </div>
   );

@@ -1,17 +1,20 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import type { AIModel, SystemConfig, SystemStatus } from '../shared/types';
+import type { AIModel, SystemConfig, TunnelConfig } from '../shared/types';
 
 contextBridge.exposeInMainWorld('electronAPI', {
   ai: {
     getModels: () => ipcRenderer.invoke('ai:get-models'),
     downloadModel: (modelId: string) => ipcRenderer.invoke('ai:download-model', modelId),
     cancelDownload: (modelId: string) => ipcRenderer.invoke('ai:cancel-download', modelId),
-    installOllama: () => ipcRenderer.invoke('ai:install-ollama'),
+    installLMStudio: () => ipcRenderer.invoke('ai:install-lmstudio'),
+    checkLMStudio: () => ipcRenderer.invoke('ai:check-lmstudio'),
+    openLMStudio: () => ipcRenderer.invoke('ai:open-lmstudio'),
   },
   tunnel: {
-    start: () => ipcRenderer.invoke('tunnel:start'),
+    start: (config: TunnelConfig) => ipcRenderer.invoke('tunnel:start', config),
     stop: () => ipcRenderer.invoke('tunnel:stop'),
     getStatus: () => ipcRenderer.invoke('tunnel:status'),
+    testConnection: (config: TunnelConfig) => ipcRenderer.invoke('tunnel:test-connection', config),
   },
   performance: {
     getStatus: () => ipcRenderer.invoke('performance:get-status'),
@@ -38,12 +41,22 @@ declare global {
         getModels: () => Promise<AIModel[]>;
         downloadModel: (modelId: string) => Promise<boolean>;
         cancelDownload: (modelId: string) => Promise<boolean>;
-        installOllama: () => Promise<boolean>;
+        installLMStudio: () => Promise<boolean>;
+        checkLMStudio: () => Promise<boolean>;
+        openLMStudio: () => Promise<boolean>;
       };
       tunnel: {
-        start: () => Promise<boolean>;
+        start: (config: TunnelConfig) => Promise<boolean>;
         stop: () => Promise<boolean>;
-        getStatus: () => Promise<{ connected: boolean; url: string | null }>;
+        getStatus: () => Promise<{ 
+          connected: boolean; 
+          url: string | null;
+          config: TunnelConfig | null;
+        }>;
+        testConnection: (config: TunnelConfig) => Promise<{ 
+          success: boolean; 
+          message: string;
+        }>;
       };
       performance: {
         getStatus: () => Promise<{
