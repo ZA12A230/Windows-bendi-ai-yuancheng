@@ -1,0 +1,18 @@
+# Build outputs
+build/
+dist/
+
+# Dependencies
+node_modules/
+vendor/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Config
+*.local.json
