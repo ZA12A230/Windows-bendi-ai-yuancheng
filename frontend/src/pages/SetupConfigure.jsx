@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import DiskCleaner from '../components/DiskCleaner'
 
 export default function SetupConfigure({ onComplete }) {
   const [config, setConfig] = useState({
@@ -194,6 +195,8 @@ export default function SetupConfigure({ onComplete }) {
           完成设置
         </button>
       </div>
+
+      <DiskCleaner />
     </div>
   )
 }

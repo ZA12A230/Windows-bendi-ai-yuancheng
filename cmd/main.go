@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"encoding/json"
 	"fmt"
 	"io/fs"
 	"log"
@@ -71,6 +72,12 @@ func main() {
 	mux.HandleFunc("/ws/stats", handleStatsWS)
 
 	mux.HandleFunc("/api/network/penetrate", handlePenetrate)
+
+	mux.HandleFunc("/api/disk/info", handleDiskInfo)
+	mux.HandleFunc("/api/disk/scan", handleDiskScan)
+	mux.HandleFunc("/api/disk/clean", handleDiskClean)
+	mux.HandleFunc("/api/disk/software", handleDiskSoftware)
+	mux.HandleFunc("/api/disk/uninstall", handleDiskUninstall)
 
 	distFS, _ := fs.Sub(frontendFS, "dist")
 	mux.Handle("/", http.FileServer(http.FS(distFS)))
@@ -368,4 +375,93 @@ func startRemoteControl() {
 	rc := remote.NewRemoteControl(8081)
 	go rc.Start()
 	rc.BroadcastScreen()
+}
+
+func handleDiskInfo(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	infos, err := system.GetDiskInfo()
+	if err != nil {
+		fmt.Fprintf(w, `{"error": "%s"}`, err.Error())
+		return
+	}
+
+	data, _ := json.Marshal(infos)
+	fmt.Fprintf(w, `{"disks": %s}`, string(data))
+}
+
+func handleDiskScan(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	files, totalSize := system.ScanCleanableFiles()
+
+	data, _ := json.Marshal(files)
+	fmt.Fprintf(w, `{"files": %s, "total_size": %d}`, string(data), totalSize)
+}
+
+func handleDiskClean(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req struct {
+		Files []string `json:"files"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		fmt.Fprintf(w, `{"error": "invalid request"}`)
+		return
+	}
+
+	result, err := system.CleanFiles(req.Files)
+	if err != nil {
+		fmt.Fprintf(w, `{"error": "%s"}`, err.Error())
+		return
+	}
+
+	data, _ := json.Marshal(result)
+	fmt.Fprintf(w, `%s`, string(data))
+}
+
+func handleDiskSoftware(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	software := system.ListInstalledSoftware()
+
+	data, _ := json.Marshal(software)
+	fmt.Fprintf(w, `{"software": %s}`, string(data))
+}
+
+func handleDiskUninstall(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req struct {
+		Name string `json:"name"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		fmt.Fprintf(w, `{"error": "invalid request"}`)
+		return
+	}
+
+	if req.Name == "" {
+		fmt.Fprintf(w, `{"error": "name required"}`)
+		return
+	}
+
+	err := system.ForceUninstallSoftware(req.Name)
+	if err != nil {
+		fmt.Fprintf(w, `{"error": "%s"}`, err.Error())
+		return
+	}
+
+	fmt.Fprintf(w, `{"status": "uninstalled"}`)
 }
