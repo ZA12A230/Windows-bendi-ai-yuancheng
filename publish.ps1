@@ -78,7 +78,8 @@ function Restore-Packages {
     Write-Step "还原 NuGet 包..."
     Push-Location $ProjectPath
     try {
-        dotnet restore --verbosity minimal
+        $projectFile = Join-Path $ProjectPath "LocalAIStudio\LocalAIStudio.csproj"
+        dotnet restore $projectFile --verbosity minimal
         if ($LASTEXITCODE -ne 0) {
             throw "dotnet restore 失败"
         }
@@ -90,11 +91,12 @@ function Restore-Packages {
 
 function Build-Project {
     param([string]$Config)
-    
+
     Write-Step "编译项目 ($Config 配置)..."
     Push-Location $ProjectPath
     try {
-        dotnet build -c $Config --verbosity minimal
+        $projectFile = Join-Path $ProjectPath "LocalAIStudio\LocalAIStudio.csproj"
+        dotnet build $projectFile -c $Config --verbosity minimal
         if ($LASTEXITCODE -ne 0) {
             throw "编译失败"
         }
@@ -111,8 +113,10 @@ function Publish-SingleFile {
     
     Push-Location $ProjectPath
     try {
+        $projectFile = Join-Path $ProjectPath "LocalAIStudio\LocalAIStudio.csproj"
         $publishArgs = @(
             "publish",
+            $projectFile,
             "-c", "Release",
             "-r", "win-x64",
             "--self-contained", "true",
