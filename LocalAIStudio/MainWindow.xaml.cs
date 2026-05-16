@@ -13,10 +13,10 @@ namespace LocalAIStudio
     public partial class MainWindow : Window
     {
         private TaskbarIcon? _notifyIcon;
-        private bool _isButtonMoved = false;
         private OllamaSetupPage? _ollamaSetupPage;
         private ModelsPage? _modelsPage;
-        private int _currentStep = 0;
+        private SettingsPage? _settingsPage;
+        private int _currentPage = 0;
 
         public MainWindow()
         {
@@ -28,118 +28,99 @@ namespace LocalAIStudio
             _notifyIcon = (TaskbarIcon)FindResource("NotifyIcon");
             EnableBlurEffect();
             PlayEntryAnimation();
-            ShowStep(_currentStep);
+
+            // 检查静默启动设置
+            if (SettingsService.Instance.SilentStartEnabled)
+            {
+                Hide();
+            }
+
+            NavigateToPage(0);
+
+            // 启动自适应模式如果已开启
+            if (SettingsService.Instance.AdaptiveModeEnabled)
+            {
+                SettingsService.Instance.AdaptiveModeEnabled = true;
+            }
         }
 
-        private void ShowStep(int step)
+        private void NavigateToPage(int pageIndex)
         {
-            _currentStep = step;
+            _currentPage = pageIndex;
+            UpdateNavigationButtons(pageIndex);
 
-            switch (step)
+            switch (pageIndex)
             {
-                case 0:
+                case 0: // 首页
                     if (_ollamaSetupPage == null)
                     {
                         _ollamaSetupPage = new OllamaSetupPage();
                         _ollamaSetupPage.SetupCompleted += OllamaSetupPage_SetupCompleted;
                     }
                     PageContent.Content = _ollamaSetupPage;
-                    NextButton.IsEnabled = _ollamaSetupPage.IsOllamaInstalled;
                     break;
 
-                case 1:
+                case 1: // 模型管理
                     if (_modelsPage == null)
                     {
                         _modelsPage = new ModelsPage();
                     }
                     PageContent.Content = _modelsPage;
-                    NextButton.Content = "启动服务";
-                    NextButton.IsEnabled = true;
+                    break;
+
+                case 2: // 设置
+                    if (_settingsPage == null)
+                    {
+                        _settingsPage = new SettingsPage();
+                    }
+                    PageContent.Content = _settingsPage;
                     break;
             }
         }
 
-        private void OllamaSetupPage_SetupCompleted(object? sender, EventArgs e)
+        private void UpdateNavigationButtons(int activeIndex)
         {
-            NextButton.IsEnabled = true;
-        }
-
-        private async void NextButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (_currentStep == 0)
+            var buttons = new Button[] { HomeNavButton, ModelsNavButton, SettingsNavButton };
+            for (int i = 0; i < buttons.Length; i++)
             {
-                if (!_isButtonMoved)
+                var border = (Border)buttons[i].Template.FindName("Border", buttons[i]);
+                if (border != null)
                 {
-                    AnimateButtonToBottomRight();
-                    _isButtonMoved = true;
-
-                    // 等待动画完成，然后切页
-                    await System.Threading.Tasks.Task.Delay(600);
-                    ShowStep(1);
+                    if (i == activeIndex)
+                    {
+                        border.Background = new System.Windows.Media.SolidColorBrush(
+                            System.Windows.Media.Color.FromRgb(0xE8, 0xF0, 0xFE));
+                        buttons[i].Foreground = new System.Windows.Media.SolidColorBrush(
+                            System.Windows.Media.Color.FromRgb(0x3B, 0x82, 0xF6));
+                    }
+                    else
+                    {
+                        border.Background = System.Windows.Media.Brushes.Transparent;
+                        buttons[i].Foreground = new System.Windows.Media.SolidColorBrush(
+                            System.Windows.Media.Color.FromRgb(0x64, 0x74, 0x8B));
+                    }
                 }
             }
-            else if (_currentStep == 1)
-            {
-                await StartSelectedModelsAsync();
-            }
         }
 
-        private async System.Threading.Tasks.Task StartSelectedModelsAsync()
+        private void HomeNavButton_Click(object sender, RoutedEventArgs e)
         {
-            if (_modelsPage == null)
-                return;
-
-            var selectedModels = _modelsPage.GetSelectedModels();
-            if (selectedModels.Count == 0)
-            {
-                MessageBox.Show("请至少选择一个模型", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
-            NextButton.IsEnabled = false;
-            NextButton.Content = "启动中...";
-
-            try
-            {
-                await OllamaService.StartOllamaServeAsync();
-                MessageBox.Show($"成功启动 {selectedModels.Count} 个模型！", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
-
-                // 下一步：可以在这里添加跳转到聊天页面或其他功能
-                // 目前这里暂时只是完成安装向导
-                MessageBox.Show("设置完成！", "完成", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"启动服务失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            finally
-            {
-                NextButton.IsEnabled = true;
-                NextButton.Content = "启动服务";
-            }
+            NavigateToPage(0);
         }
 
-        private void AnimateButtonToBottomRight()
+        private void ModelsNavButton_Click(object sender, RoutedEventArgs e)
         {
-            var buttonTransform = (TranslateTransform)NextButton.RenderTransform;
+            NavigateToPage(1);
+        }
 
-            var containerWidth = ButtonContainer.ActualWidth;
-            var buttonWidth = NextButton.ActualWidth;
+        private void SettingsNavButton_Click(object sender, RoutedEventArgs e)
+        {
+            NavigateToPage(2);
+        }
 
-            var dx = containerWidth / 2 - buttonWidth / 2 - 40;
-
-            var duration = new Duration(TimeSpan.FromMilliseconds(500));
-            var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
-
-            var xAnim = new DoubleAnimation
-            {
-                From = 0,
-                To = dx,
-                Duration = duration,
-                EasingFunction = ease
-            };
-
-            buttonTransform.BeginAnimation(TranslateTransform.XProperty, xAnim);
+        private void OllamaSetupPage_SetupCompleted(object? sender, EventArgs e)
+        {
+            // 可以在完成时做一些处理
         }
 
         private void EnableBlurEffect()
