@@ -1,18 +1,66 @@
-# Build outputs
-build/
-dist/
+# ===== OS =====
+.DS_Store
+._*
+Thumbs.db
+Desktop.ini
 
-# Dependencies
-node_modules/
-vendor/
-
-# IDE
+# ===== IDE/Editor =====
 .vscode/
 .idea/
+.project
+.classpath
+.settings/
+*.sublime-*
 
-# OS
-.DS_Store
-Thumbs.db
+# ===== Node.js/Frontend =====
+node_modules/
+.pnpm-store/
+.next/
+.nuxt/
+.vite/
+.cache/
+.eslintcache
+*.tsbuildinfo
 
-# Config
-*.local.json
+# ===== Python =====
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+*.egg-info/
+
+# ===== Rust =====
+target/
+
+# ===== Java/JVM =====
+.gradle/
+*.class
+*.jar
+*.war
+*.ear
+
+# ===== Ruby =====
+.bundle/
+
+# ===== Logs/Temp =====
+*.log
+logs/
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# ===== Test Coverage =====
+coverage/
+.nyc_output/
+htmlcov/
+.coverage
+*.lcov
+
+# ===== Internal =====
+/.work/
