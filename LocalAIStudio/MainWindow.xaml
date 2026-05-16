@@ -75,10 +75,14 @@
                                 Style="{StaticResource NavButtonStyle}"
                                 Click="ModelsNavButton_Click"
                                 Tag="1"/>
+                        <Button x:Name="FrpNavButton" Content="内网穿透" 
+                                Style="{StaticResource NavButtonStyle}"
+                                Click="FrpNavButton_Click"
+                                Tag="2"/>
                         <Button x:Name="SettingsNavButton" Content="设置" 
                                 Style="{StaticResource NavButtonStyle}"
                                 Click="SettingsNavButton_Click"
-                                Tag="2"/>
+                                Tag="3"/>
                     </StackPanel>
                 </Border>
 

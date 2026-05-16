@@ -15,6 +15,7 @@ namespace LocalAIStudio
         private TaskbarIcon? _notifyIcon;
         private OllamaSetupPage? _ollamaSetupPage;
         private ModelsPage? _modelsPage;
+        private FrpConfigPage? _frpConfigPage;
         private SettingsPage? _settingsPage;
         private int _currentPage = 0;
 
@@ -68,7 +69,15 @@ namespace LocalAIStudio
                     PageContent.Content = _modelsPage;
                     break;
 
-                case 2: // 设置
+                case 2: // 内网穿透
+                    if (_frpConfigPage == null)
+                    {
+                        _frpConfigPage = new FrpConfigPage();
+                    }
+                    PageContent.Content = _frpConfigPage;
+                    break;
+
+                case 3: // 设置
                     if (_settingsPage == null)
                     {
                         _settingsPage = new SettingsPage();
@@ -80,7 +89,7 @@ namespace LocalAIStudio
 
         private void UpdateNavigationButtons(int activeIndex)
         {
-            var buttons = new Button[] { HomeNavButton, ModelsNavButton, SettingsNavButton };
+            var buttons = new Button[] { HomeNavButton, ModelsNavButton, FrpNavButton, SettingsNavButton };
             for (int i = 0; i < buttons.Length; i++)
             {
                 var border = (Border)buttons[i].Template.FindName("Border", buttons[i]);
@@ -113,9 +122,14 @@ namespace LocalAIStudio
             NavigateToPage(1);
         }
 
-        private void SettingsNavButton_Click(object sender, RoutedEventArgs e)
+        private void FrpNavButton_Click(object sender, RoutedEventArgs e)
         {
             NavigateToPage(2);
+        }
+
+        private void SettingsNavButton_Click(object sender, RoutedEventArgs e)
+        {
+            NavigateToPage(3);
         }
 
         private void OllamaSetupPage_SetupCompleted(object? sender, EventArgs e)

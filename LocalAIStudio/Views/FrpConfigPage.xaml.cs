@@ -1,7 +1,7 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
+using System.Windows.Input;
 using System.Windows.Navigation;
 using LocalAIStudio.Services;
 
@@ -9,69 +9,151 @@ namespace LocalAIStudio.Views
 {
     public partial class FrpConfigPage : UserControl
     {
-        private FrpConfig _currentConfig;
+        private FrpConfig _config = new FrpConfig();
         private bool _isStarting = false;
 
         public FrpConfigPage()
         {
             InitializeComponent();
             Loaded += FrpConfigPage_Loaded;
+            Unloaded += FrpConfigPage_Unloaded;
         }
 
         private void FrpConfigPage_Loaded(object sender, RoutedEventArgs e)
         {
-            _currentConfig = FrpService.Instance.LoadConfig();
-            FillFormFromConfig(_currentConfig);
-            UpdateFrpStatusDisplay();
-
-            // 订阅服务状态变化
+            LoadConfig();
+            UpdateStatusDisplay();
             FrpService.Instance.StatusChanged += FrpService_StatusChanged;
         }
 
-        private void FillFormFromConfig(FrpConfig config)
+        private void FrpConfigPage_Unloaded(object sender, RoutedEventArgs e)
         {
-            BrowserUrlTextBox.Text = config.BrowserUrl;
-            IpPrefixText.Text = config.IpPrefix;
-            IpLastSegmentTextBox.Text = config.IpLastSegment;
-            UsernameTextBox.Text = config.Username;
-            
-            // 处理密码
-            if (!string.IsNullOrEmpty(config.Password))
-            {
-                PasswordBox.Password = config.Password;
-            }
-            
-            CustomSubdomainTextBox.Text = config.CustomSubdomain;
-            EnableFrpToggle.IsChecked = config.IsEnabled;
-            SubdomainSection.Visibility = config.IsEnabled ? Visibility.Visible : Visibility.Collapsed;
-
-            UpdateAccessInfo();
+            FrpService.Instance.StatusChanged -= FrpService_StatusChanged;
         }
 
-        private bool ValidateInput()
+        private void LoadConfig()
+        {
+            _config = FrpService.Instance.LoadConfig();
+
+            BrowserUrlTextBox.Text = _config.BrowserUrl;
+            IpPrefixText.Text = _config.IpPrefix;
+            IpLastSegmentTextBox.Text = _config.IpLastSegment;
+            UsernameTextBox.Text = _config.Username;
+            // PasswordBox is secure, we'll not pre-fill, but will save
+            CustomSubdomainTextBox.Text = _config.CustomSubdomain;
+            EnableFrpToggle.IsChecked = _config.IsEnabled;
+
+            UpdateSubdomainVisibility();
+        }
+
+        private void FrpService_StatusChanged(object? sender, bool isRunning)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                UpdateStatusDisplay();
+            });
+        }
+
+        private void UpdateStatusDisplay()
+        {
+            bool isRunning = FrpService.Instance.IsRunning;
+
+            if (isRunning)
+            {
+                StatusIndicator.Fill = new System.Windows.Media.SolidColorBrush(
+                    System.Windows.Media.Color.FromRgb(0x10, 0xB9, 0x81));
+                StatusText.Text = "已连接";
+                StatusText.Foreground = new System.Windows.Media.SolidColorBrush(
+                    System.Windows.Media.Color.FromRgb(0x10, 0xB9, 0x81));
+                StartStopButton.Content = "停止服务";
+                StartStopButton.Background = new System.Windows.Media.SolidColorBrush(
+                    System.Windows.Media.Color.FromRgb(0xEF, 0x44, 0x44));
+                AccessInfoSection.Visibility = Visibility.Visible;
+                UpdateAccessUrls();
+            }
+            else
+            {
+                StatusIndicator.Fill = new System.Windows.Media.SolidColorBrush(
+                    System.Windows.Media.Color.FromRgb(0x94, 0xA3, 0xB8));
+                StatusText.Text = "未连接";
+                StatusText.Foreground = new System.Windows.Media.SolidColorBrush(
+                    System.Windows.Media.Color.FromRgb(0x64, 0x74, 0x8B));
+                StartStopButton.Content = "启动服务";
+                StartStopButton.Background = new System.Windows.Media.SolidColorBrush(
+                    System.Windows.Media.Color.FromRgb(0x10, 0xB9, 0x81));
+                AccessInfoSection.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void UpdateAccessUrls()
+        {
+            string fullIp = $"{_config.IpPrefix}{_config.IpLastSegment}";
+            string localUrl = _config.BrowserUrl.Replace("localhost", fullIp);
+            LocalAccessUrl.Text = $"局域网访问: {localUrl}";
+
+            if (!string.IsNullOrWhiteSpace(_config.CustomSubdomain))
+            {
+                RemoteAccessUrl.Text = $"公网访问: http://{_config.CustomSubdomain}.aiyuancheng.com";
+                RemoteAccessUrl.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                RemoteAccessUrl.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void EnableFrpToggle_Changed(object sender, RoutedEventArgs e)
+        {
+            UpdateSubdomainVisibility();
+        }
+
+        private void UpdateSubdomainVisibility()
+        {
+            if (EnableFrpToggle.IsChecked == true)
+            {
+                SubdomainSection.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                SubdomainSection.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void IpLastSegmentTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            // 只允许输入数字
+            if (!char.IsDigit(e.Text, 0))
+            {
+                e.Handled = true;
+            }
+        }
+
+        private bool ValidateInputs()
         {
             bool isValid = true;
 
-            // 验证 IP 最后一段
-            IpErrorText.Visibility = Visibility.Collapsed;
+            // 验证IP最后一段
             if (string.IsNullOrWhiteSpace(IpLastSegmentTextBox.Text))
             {
-                IpErrorText.Text = "IPv4地址最后一段必须填写";
+                IpErrorText.Text = "请填写IPv4地址的最后一段";
                 IpErrorText.Visibility = Visibility.Visible;
                 isValid = false;
             }
-            else if (!int.TryParse(IpLastSegmentTextBox.Text, out int ipPart) || ipPart < 0 || ipPart > 255)
+            else if (!byte.TryParse(IpLastSegmentTextBox.Text, out byte ipPart) || ipPart == 0 || ipPart > 254)
             {
-                IpErrorText.Text = "请输入有效的数字（0-255）";
+                IpErrorText.Text = "IP段必须在 1-254 之间";
                 IpErrorText.Visibility = Visibility.Visible;
                 isValid = false;
+            }
+            else
+            {
+                IpErrorText.Visibility = Visibility.Collapsed;
             }
 
-            // 验证账号名
-            UsernameErrorText.Visibility = Visibility.Collapsed;
+            // 验证用户名
             if (string.IsNullOrWhiteSpace(UsernameTextBox.Text))
             {
-                UsernameErrorText.Text = "账号名必须填写";
+                UsernameErrorText.Text = "请填写账号名";
                 UsernameErrorText.Visibility = Visibility.Visible;
                 isValid = false;
             }
@@ -81,190 +163,114 @@ namespace LocalAIStudio.Views
                 UsernameErrorText.Visibility = Visibility.Visible;
                 isValid = false;
             }
+            else
+            {
+                UsernameErrorText.Visibility = Visibility.Collapsed;
+            }
 
             // 验证密码
-            PasswordErrorText.Visibility = Visibility.Collapsed;
-            if (string.IsNullOrWhiteSpace(PasswordBox.Password))
+            var password = PasswordBox.Password;
+            if (string.IsNullOrWhiteSpace(password))
             {
-                PasswordErrorText.Text = "密码必须填写";
+                PasswordErrorText.Text = "请填写密码";
                 PasswordErrorText.Visibility = Visibility.Visible;
                 isValid = false;
             }
-            else if (!System.Text.RegularExpressions.Regex.IsMatch(PasswordBox.Password, "^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9]+$"))
+            else if (!System.Text.RegularExpressions.Regex.IsMatch(password, "^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9]+$"))
             {
                 PasswordErrorText.Text = "密码必须包含英文和数字的组合";
                 PasswordErrorText.Visibility = Visibility.Visible;
                 isValid = false;
             }
+            else
+            {
+                PasswordErrorText.Visibility = Visibility.Collapsed;
+            }
 
             return isValid;
         }
 
-        private FrpConfig GetConfigFromForm()
+        private void UpdateConfigFromUi()
         {
-            return new FrpConfig
-            {
-                BrowserUrl = BrowserUrlTextBox.Text,
-                IpPrefix = IpPrefixText.Text,
-                IpLastSegment = IpLastSegmentTextBox.Text,
-                Username = UsernameTextBox.Text,
-                Password = PasswordBox.Password,
-                CustomSubdomain = CustomSubdomainTextBox.Text,
-                IsEnabled = EnableFrpToggle.IsChecked ?? false
-            };
+            _config.BrowserUrl = BrowserUrlTextBox.Text;
+            _config.IpPrefix = IpPrefixText.Text;
+            _config.IpLastSegment = IpLastSegmentTextBox.Text;
+            _config.Username = UsernameTextBox.Text;
+            _config.Password = PasswordBox.Password;
+            _config.CustomSubdomain = CustomSubdomainTextBox.Text;
+            _config.IsEnabled = EnableFrpToggle.IsChecked == true;
         }
 
         private async void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!ValidateInput())
+            if (!ValidateInputs())
+            {
                 return;
+            }
 
-            var config = GetConfigFromForm();
-            FrpService.Instance.SaveConfig(config);
-            _currentConfig = config;
-
+            UpdateConfigFromUi();
+            FrpService.Instance.SaveConfig(_config);
             MessageBox.Show("配置保存成功！", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
-            UpdateAccessInfo();
         }
 
         private async void StartStopButton_Click(object sender, RoutedEventArgs e)
         {
             if (_isStarting)
-                return;
-
-            try
             {
+                return;
+            }
+
+            if (FrpService.Instance.IsRunning)
+            {
+                await FrpService.Instance.StopAsync();
+            }
+            else
+            {
+                if (!ValidateInputs())
+                {
+                    return;
+                }
+
+                UpdateConfigFromUi();
                 _isStarting = true;
                 StartStopButton.IsEnabled = false;
 
-                if (FrpService.Instance.IsRunning)
+                try
                 {
-                    // 停止服务
-                    await FrpService.Instance.StopAsync();
-                    StartStopButton.Content = "启动服务";
-                    StartStopButton.Background = new System.Windows.Media.SolidColorBrush(
-                        System.Windows.Media.Color.FromRgb(0x10, 0xB9, 0x81));
-                }
-                else
-                {
-                    // 验证并启动
-                    if (!ValidateInput())
-                        return;
-
-                    var config = GetConfigFromForm();
-                    FrpService.Instance.SaveConfig(config);
-                    _currentConfig = config;
-
-                    bool started = await FrpService.Instance.StartAsync(config);
-                    if (started)
+                    bool success = await FrpService.Instance.StartAsync(_config);
+                    if (success)
                     {
-                        StartStopButton.Content = "停止服务";
-                        StartStopButton.Background = new System.Windows.Media.SolidColorBrush(
-                            System.Windows.Media.Color.FromRgb(0xEF, 0x44, 0x44));
-                        MessageBox.Show("内网穿透服务已启动！", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBox.Show("内网穿透服务启动成功！", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                     else
                     {
-                        MessageBox.Show("启动失败，请检查 frpc.exe 是否在应用目录中。", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show("启动失败，请检查 frpc.exe 是否存在", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"启动失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                finally
+                {
+                    _isStarting = false;
+                    StartStopButton.IsEnabled = true;
+                }
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"操作失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            finally
-            {
-                _isStarting = false;
-                StartStopButton.IsEnabled = true;
-            }
-        }
-
-        private void EnableFrpToggle_Changed(object sender, RoutedEventArgs e)
-        {
-            bool isEnabled = EnableFrpToggle.IsChecked ?? false;
-            SubdomainSection.Visibility = isEnabled ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            try
             {
-                FileName = e.Uri.ToString(),
-                UseShellExecute = true
-            });
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = e.Uri.ToString(),
+                    UseShellExecute = true
+                });
+            }
+            catch { }
             e.Handled = true;
-        }
-
-        private void IpLastSegmentTextBox_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
-        {
-            // 只允许数字输入
-            if (!char.IsDigit(e.Text[0]))
-            {
-                e.Handled = true;
-            }
-        }
-
-        private void FrpService_StatusChanged(object? sender, bool isRunning)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                UpdateFrpStatusDisplay();
-            });
-        }
-
-        private void UpdateFrpStatusDisplay()
-        {
-            if (FrpService.Instance.IsRunning)
-            {
-                StatusIndicator.Fill = new System.Windows.Media.SolidColorBrush(
-                    System.Windows.Media.Color.FromRgb(0x10, 0xB9, 0x81));
-                StatusText.Text = "已连接";
-                StatusText.Foreground = new System.Windows.Media.SolidColorBrush(
-                    System.Windows.Media.Color.FromRgb(0x06, 0x5F, 0x46));
-
-                StartStopButton.Content = "停止服务";
-                StartStopButton.Background = new System.Windows.Media.SolidColorBrush(
-                    System.Windows.Media.Color.FromRgb(0xEF, 0x44, 0x44));
-
-                AccessInfoSection.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                StatusIndicator.Fill = new System.Windows.Media.SolidColorBrush(
-                    System.Windows.Media.Color.FromRgb(0x94, 0xA3, 0xB8));
-                StatusText.Text = "未连接";
-                StatusText.Foreground = new System.Windows.Media.SolidColorBrush(
-                    System.Windows.Media.Color.FromRgb(0x64, 0x74, 0x8B));
-
-                StartStopButton.Content = "启动服务";
-                StartStopButton.Background = new System.Windows.Media.SolidColorBrush(
-                    System.Windows.Media.Color.FromRgb(0x10, 0xB9, 0x81));
-
-                AccessInfoSection.Visibility = Visibility.Collapsed;
-            }
-        }
-
-        private void UpdateAccessInfo()
-        {
-            if (!string.IsNullOrEmpty(_currentConfig?.IpLastSegment))
-            {
-                string localUrl = $"http://{_currentConfig.IpPrefix}{_currentConfig.IpLastSegment}:8080";
-                LocalAccessUrl.Text = $"本地访问：{localUrl}";
-
-                if (!string.IsNullOrEmpty(_currentConfig.CustomSubdomain))
-                {
-                    string remoteUrl = $"http://{_currentConfig.CustomSubdomain}.aiyuancheng.com";
-                    RemoteAccessUrl.Text = $"外网访问：{remoteUrl}";
-                    RemoteAccessUrl.Visibility = Visibility.Visible;
-                }
-                else
-                {
-                    RemoteAccessUrl.Visibility = Visibility.Collapsed;
-                }
-
-                AccessInfoSection.Visibility = Visibility.Visible;
-            }
         }
     }
 }
