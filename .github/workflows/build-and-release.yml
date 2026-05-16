@@ -14,7 +14,7 @@ on:
 env:
   DOTNET_VERSION: '8.0.x'
   PROJECT_NAME: 'LocalAIStudio'
-  SOLUTION_FILE: 'LocalAIStudio.sln'
+  PROJECT_FILE: 'LocalAIStudio/LocalAIStudio.csproj'
 
 jobs:
   build-windows:
@@ -32,14 +32,14 @@ jobs:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
     - name: Restore dependencies
-      run: dotnet restore ${{ env.SOLUTION_FILE }}
+      run: dotnet restore ${{ env.PROJECT_FILE }}
 
     - name: Build
-      run: dotnet build ${{ env.SOLUTION_FILE }} -c Release --no-restore
+      run: dotnet build ${{ env.PROJECT_FILE }} -c Release --no-restore
 
     - name: Publish Single File EXE
       run: |
-        dotnet publish LocalAIStudio/LocalAIStudio.csproj `
+        dotnet publish ${{ env.PROJECT_FILE }} `
           -c Release `
           -r win-x64 `
           --self-contained true `
