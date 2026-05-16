@@ -1,133 +1,618 @@
 <Window x:Class="LocalAIStudio.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:tb="http://www.hardcodet.net/taskbar"
-        Title="Local AI Studio" Height="580" Width="780"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Local AI Studio" 
+        Height="720" Width="1100"
+        MinHeight="600" MinWidth="900"
         WindowStyle="None" AllowsTransparency="True"
-        Background="Transparent" ResizeMode="CanResizeWithGrip"
-        Loaded="Window_Loaded">
+        Background="Transparent"
+        ResizeMode="CanResizeWithGrip">
 
     <Window.Resources>
-        <tb:TaskbarIcon x:Key="NotifyIcon" ToolTipText="Local AI Studio"
-                        TrayMouseDoubleClick="NotifyIcon_TrayMouseDoubleClick">
-            <tb:TaskbarIcon.ContextMenu>
-                <ContextMenu>
-                    <MenuItem Header="显示窗口" Click="ShowWindowMenuItem_Click"/>
-                    <MenuItem Header="退出" Click="ExitMenuItem_Click"/>
-                </ContextMenu>
-            </tb:TaskbarIcon.ContextMenu>
-        </tb:TaskbarIcon>
-    </Window.Resources>
+        <!-- 毛玻璃效果 -->
+        <DropShadowEffect x:Name="ShadowEffect" Color="#1E3A8A" BlurRadius="40" ShadowDepth="0" Opacity="0.3"/>
 
-    <Grid>
-        <Border x:Name="WindowBorder" Background="#FFFFFF" 
-                CornerRadius="20" BorderBrush="#E0E8FF" BorderThickness="1">
-            <Border.Effect>
-                <DropShadowEffect Color="Black" Opacity="0.15" BlurRadius="30" ShadowDepth="0"/>
-            </Border.Effect>
-        </Border>
+        <!-- 蓝色渐变 -->
+        <LinearGradientBrush x:Key="BlueGradient" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#3B82F6" Offset="0"/>
+            <GradientStop Color="#2563EB" Offset="1"/>
+        </LinearGradientBrush>
 
-        <Grid x:Name="MainGrid" Opacity="0" RenderTransformOrigin="0.5, 0.5">
-            <Grid.RenderTransform>
-                <ScaleTransform ScaleX="0.9" ScaleY="0.9"/>
-            </Grid.RenderTransform>
-            
-            <Grid.RowDefinitions>
-                <RowDefinition Height="40"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
+        <LinearGradientBrush x:Key="BlueGradientLight" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#60A5FA" Offset="0"/>
+            <GradientStop Color="#3B82F6" Offset="1"/>
+        </LinearGradientBrush>
 
-            <Border Grid.Row="0" Background="Transparent" MouseLeftButtonDown="TitleBar_MouseDown">
-                <Grid>
-                    <StackPanel Orientation="Horizontal" Margin="15,0">
-                        <TextBlock Text="Local AI Studio" FontSize="14" FontWeight="Medium"
-                                   Foreground="#444444" VerticalAlignment="Center"/>
-                    </StackPanel>
-
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,10">
-                        <Button x:Name="MinimizeButton" Click="MinimizeButton_Click"
-                                Width="30" Height="30" Content="─" FontSize="12"
-                                Background="Transparent" Foreground="#666666"
-                                BorderThickness="0" Padding="0"/>
-                        <Button x:Name="CloseButton" Click="CloseButton_Click"
-                                Width="30" Height="30" Content="✕" FontSize="12"
-                                Background="Transparent" Foreground="#666666"
-                                BorderThickness="0" Padding="0"/>
-                    </StackPanel>
-                </Grid>
-            </Border>
-
-            <Grid Grid.Row="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="180"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <!-- 侧边栏 -->
-                <Border Grid.Column="0" Background="#F8FAFC" 
-                        CornerRadius="0,0,0,20" Padding="15,20">
-                    <StackPanel>
-                        <Button x:Name="HomeNavButton" Content="首页" 
-                                Style="{StaticResource NavButtonStyle}"
-                                Click="HomeNavButton_Click"
-                                Tag="0"/>
-                        <Button x:Name="ModelsNavButton" Content="模型管理" 
-                                Style="{StaticResource NavButtonStyle}"
-                                Click="ModelsNavButton_Click"
-                                Tag="1"/>
-                        <Button x:Name="FrpNavButton" Content="内网穿透" 
-                                Style="{StaticResource NavButtonStyle}"
-                                Click="FrpNavButton_Click"
-                                Tag="2"/>
-                        <Button x:Name="RemoteDesktopNavButton" Content="远程桌面" 
-                                Style="{StaticResource NavButtonStyle}"
-                                Click="RemoteDesktopNavButton_Click"
-                                Tag="3"/>
-                        <Button x:Name="HardwareMonitorNavButton" Content="硬件监控" 
-                                Style="{StaticResource NavButtonStyle}"
-                                Click="HardwareMonitorNavButton_Click"
-                                Tag="4"/>
-                        <Button x:Name="SettingsNavButton" Content="设置" 
-                                Style="{StaticResource NavButtonStyle}"
-                                Click="SettingsNavButton_Click"
-                                Tag="5"/>
-                    </StackPanel>
-                </Border>
-
-                <!-- 内容区 -->
-                <ContentControl x:Name="PageContent" Grid.Column="1" Margin="30,25"/>
-            </Grid>
-        </Grid>
-    </Grid>
-
-    <Window.Resources>
-        <Style TargetType="Button" x:Key="NavButtonStyle">
-            <Setter Property="Height" Value="45"/>
-            <Setter Property="Width" Value="100"/>
-            <Setter Property="HorizontalAlignment" Value="Left"/>
+        <!-- 按钮样式 -->
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource BlueGradient}"/>
+            <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Foreground" Value="#64748B"/>
-            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="20,12"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="Border" 
-                                Background="{TemplateBinding Background}"
-                                CornerRadius="10"
-                                Padding="15,0">
-                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                        <Border x:Name="border" Background="{TemplateBinding Background}"
+                                CornerRadius="12" Padding="{TemplateBinding Padding}">
+                            <Border.RenderTransform>
+                                <ScaleTransform x:Name="scale" ScaleX="1" ScaleY="1" CenterX="0.5" CenterY="0.5"/>
+                            </Border.RenderTransform>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#E8F0FE" TargetName="Border"/>
-                                <Setter Property="Foreground" Value="#3B82F6"/>
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource BlueGradientLight}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="scale" Storyboard.TargetProperty="ScaleX" To="0.95" Duration="0:0:0.05"/>
+                                            <DoubleAnimation Storyboard.TargetName="scale" Storyboard.TargetProperty="ScaleY" To="0.95" Duration="0:0:0.05"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="scale" Storyboard.TargetProperty="ScaleX" To="1" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="scale" Storyboard.TargetProperty="ScaleY" To="1" Duration="0:0:0.1"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <!-- 导航按钮样式 -->
+        <Style x:Key="NavButtonStyle" TargetType="RadioButton">
+            <Setter Property="Foreground" Value="#94A3B8"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="15,12"/>
+            <Setter Property="Margin" Value="0,2"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="border" Background="Transparent" CornerRadius="10" Padding="{TemplateBinding Padding}">
+                            <Border.RenderTransform>
+                                <ScaleTransform x:Name="scale" ScaleX="1" ScaleY="1"/>
+                            </Border.RenderTransform>
+                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#EFF6FF"/>
+                                <Setter Property="Foreground" Value="#3B82F6"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#F8FAFC"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="scale" Storyboard.TargetProperty="ScaleX" To="0.98" Duration="0:0:0.05"/>
+                                            <DoubleAnimation Storyboard.TargetName="scale" Storyboard.TargetProperty="ScaleY" To="0.98" Duration="0:0:0.05"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="scale" Storyboard.TargetProperty="ScaleX" To="1" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="scale" Storyboard.TargetProperty="ScaleY" To="1" Duration="0:0:0.1"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 输入框样式 -->
+        <Style x:Key="ModernTextBox" TargetType="TextBox">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="#1E293B"/>
+            <Setter Property="BorderBrush" Value="#E2E8F0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="10">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 进度条样式 -->
+        <Style x:Key="ModernProgressBar" TargetType="ProgressBar">
+            <Setter Property="Height" Value="8"/>
+            <Setter Property="Background" Value="#E2E8F0"/>
+            <Setter Property="Foreground" Value="{StaticResource BlueGradient}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ProgressBar">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                            <Border x:Name="PART_Track">
+                                <Border x:Name="PART_Indicator" HorizontalAlignment="Left" 
+                                        Background="{TemplateBinding Foreground}" CornerRadius="4"/>
+                            </Border>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 卡片样式 -->
+        <Style x:Key="CardBorder" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="#000" BlurRadius="20" ShadowDepth="2" Opacity="0.08"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
+
+    <Grid>
+        <!-- 主窗口毛玻璃背景 -->
+        <Border CornerRadius="20" Background="#F8FAFC">
+            <Border.Effect>
+                <BlurEffect Radius="0"/>
+            </Border.Effect>
+        </Border>
+
+        <!-- 内容容器 -->
+        <Border x:Name="MainBorder" CornerRadius="20" Background="Transparent">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="240"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- 左侧导航面板 -->
+                <Border Grid.Column="0" Background="White" CornerRadius="20,0,0,20" 
+                        Margin="0,0,1,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Logo区域 -->
+                        <StackPanel Grid.Row="0" Margin="20,25,20,30">
+                            <TextBlock Text="Local AI" FontSize="24" FontWeight="Bold" 
+                                       Foreground="{StaticResource BlueGradient}"/>
+                            <TextBlock Text="STUDIO" FontSize="12" FontWeight="Bold" 
+                                       Foreground="#94A3B8" Margin="0,-5,0,0" LetterSpacing="4"/>
+                        </StackPanel>
+
+                        <!-- 导航菜单 -->
+                        <StackPanel Grid.Row="1" Margin="12,0">
+                            <RadioButton x:Name="NavHardware" Content="📊 硬件显示" 
+                                        Style="{StaticResource NavButtonStyle}" 
+                                        IsChecked="True" GroupName="Nav"
+                                        Checked="NavButton_Checked" Tag="硬件显示"/>
+                            <RadioButton x:Name="NavAI" Content="🤖 AI调用" 
+                                        Style="{StaticResource NavButtonStyle}" 
+                                        GroupName="Nav"
+                                        Checked="NavButton_Checked" Tag="AI调用"/>
+                            <RadioButton x:Name="NavRemote" Content="🖥️ 远控电脑" 
+                                        Style="{StaticResource NavButtonStyle}" 
+                                        GroupName="Nav"
+                                        Checked="NavButton_Checked" Tag="远控电脑"/>
+                            <RadioButton x:Name="NavWeb" Content="🌐 网站服务器" 
+                                        Style="{StaticResource NavButtonStyle}" 
+                                        GroupName="Nav"
+                                        Checked="NavButton_Checked" Tag="网站服务器"/>
+                        </StackPanel>
+
+                        <!-- 底部状态 -->
+                        <StackPanel Grid.Row="2" Margin="20,0,20,20">
+                            <Border Background="#F1F5F9" CornerRadius="10" Padding="12">
+                                <StackPanel>
+                                    <TextBlock Text="系统状态" FontSize="11" Foreground="#64748B"/>
+                                    <TextBlock x:Name="StatusText" Text="运行中" FontSize="13" FontWeight="SemiBold" 
+                                               Foreground="#10B981" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- 主内容区域 -->
+                <Grid Grid.Column="1" Margin="25">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- 顶部栏 -->
+                    <Grid Grid.Row="0" Margin="0,0,0,20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock x:Name="PageTitle" Text="硬件显示" FontSize="28" FontWeight="Bold" 
+                                       Foreground="#1E293B"/>
+                            <TextBlock x:Name="PageSubtitle" Text="实时监控系统性能" FontSize="14" 
+                                       Foreground="#64748B" Margin="0,4,0,0"/>
+                        </StackPanel>
+
+                        <!-- 用户信息 -->
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Border Background="White" CornerRadius="25" Padding="8,6,15,6" Margin="0,0,10,0">
+                                <Border.Effect>
+                                    <DropShadowEffect Color="#000" BlurRadius="10" ShadowDepth="1" Opacity="0.05"/>
+                                </Border.Effect>
+                                <StackPanel Orientation="Horizontal">
+                                    <Ellipse Width="28" Height="28" Fill="{StaticResource BlueGradient}"/>
+                                    <TextBlock x:Name="UsernameText" Text="用户" FontSize="13" FontWeight="Medium" 
+                                               Foreground="#1E293B" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- 最小化按钮 -->
+                            <Button Content="─" Click="MinimizeButton_Click"
+                                    Width="40" Height="40" FontSize="16"
+                                    Background="Transparent" Foreground="#64748B"
+                                    BorderThickness="0" Cursor="Hand">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="8">
+                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="b" Property="Background" Value="#F1F5F9"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+
+                            <!-- 关闭按钮 -->
+                            <Button Content="✕" Click="CloseButton_Click"
+                                    Width="40" Height="40" FontSize="14"
+                                    Background="Transparent" Foreground="#64748B"
+                                    BorderThickness="0" Cursor="Hand">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="8">
+                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="b" Property="Background" Value="#FEE2E2"/>
+                                                            <Setter Property="Foreground" Value="#EF4444"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- 内容页面容器 -->
+                    <Grid x:Name="ContentContainer" Grid.Row="1">
+                        <!-- 硬件显示页面 -->
+                        <Grid x:Name="HardwarePage" Visibility="Visible">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- 系统信息卡片 -->
+                            <Border Grid.Row="0" Style="{StaticResource CardBorder}" Margin="0,0,0,15">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="本机IPv4" FontSize="12" Foreground="#64748B"/>
+                                        <TextBlock x:Name="LocalIpText" Text="192.168.1.100" FontSize="18" FontWeight="Bold" 
+                                                   Foreground="#1E293B" Margin="0,5,0,0"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="内网穿透地址" FontSize="12" Foreground="#64748B"/>
+                                        <TextBlock x:Name="PublicIpText" Text="未连接" FontSize="18" FontWeight="Bold" 
+                                                   Foreground="#1E293B" Margin="0,5,0,0"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="用户" FontSize="12" Foreground="#64748B"/>
+                                        <TextBlock x:Name="UserDisplayText" Text="admin ****" FontSize="18" FontWeight="Bold" 
+                                                   Foreground="#1E293B" Margin="0,5,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- 性能曲线图区域 -->
+                            <Border Grid.Row="1" Style="{StaticResource CardBorder}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+
+                                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,15">
+                                        <TextBlock Text="实时性能监控" FontSize="16" FontWeight="SemiBold" Foreground="#1E293B"/>
+                                        <Border Background="#EFF6FF" CornerRadius="5" Padding="8,3" Margin="15,0,0,0">
+                                            <TextBlock Text="实时" FontSize="11" Foreground="#3B82F6"/>
+                                        </Border>
+                                    </StackPanel>
+
+                                    <!-- 模拟图表 -->
+                                    <Border Grid.Row="1" Background="#F8FAFC" CornerRadius="12" Padding="15">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="30"/>
+                                                <RowDefinition Height="*"/>
+                                                <RowDefinition Height="20"/>
+                                            </Grid.RowDefinitions>
+
+                                            <!-- Y轴标签 -->
+                                            <StackPanel Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Top">
+                                                <TextBlock Text="100%" FontSize="10" Foreground="#94A3B8"/>
+                                                <TextBlock Text="75%" FontSize="10" Foreground="#94A3B8" Margin="0,30,0,0"/>
+                                                <TextBlock Text="50%" FontSize="10" Foreground="#94A3B8" Margin="0,30,0,0"/>
+                                                <TextBlock Text="25%" FontSize="10" Foreground="#94A3B8" Margin="0,30,0,0"/>
+                                                <TextBlock Text="0%" FontSize="10" Foreground="#94A3B8" Margin="0,30,0,0"/>
+                                            </StackPanel>
+
+                                            <!-- 图表区域 -->
+                                            <Canvas x:Name="ChartCanvas" Grid.Row="1" ClipToBounds="True">
+                                                <Polyline x:Name="CpuLine" Stroke="#3B82F6" StrokeThickness="2"/>
+                                                <Polyline x:Name="AiLine" Stroke="#F97316" StrokeThickness="2"/>
+                                            </Canvas>
+
+                                            <!-- X轴标签 -->
+                                            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center">
+                                                <TextBlock Text="0s" FontSize="10" Foreground="#94A3B8"/>
+                                                <TextBlock Text="30s" FontSize="10" Foreground="#94A3B8" Margin="200,0,0,0"/>
+                                                <TextBlock Text="60s" FontSize="10" Foreground="#94A3B8" Margin="200,0,0,0"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </Grid>
+                            </Border>
+
+                            <!-- 性能指标卡片 -->
+                            <Grid Grid.Row="2" Margin="0,15,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Border Grid.Column="0" Style="{StaticResource CardBorder}" Margin="0,0,8,0">
+                                    <StackPanel>
+                                        <TextBlock Text="CPU" FontSize="12" Foreground="#64748B"/>
+                                        <TextBlock x:Name="CpuText" Text="0%" FontSize="24" FontWeight="Bold" 
+                                                   Foreground="#3B82F6" Margin="0,8,0,8"/>
+                                        <ProgressBar x:Name="CpuBar" Value="0" Maximum="100" Style="{StaticResource ModernProgressBar}"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Grid.Column="1" Style="{StaticResource CardBorder}" Margin="8,0">
+                                    <StackPanel>
+                                        <TextBlock Text="GPU" FontSize="12" Foreground="#64748B"/>
+                                        <TextBlock x:Name="GpuText" Text="0%" FontSize="24" FontWeight="Bold" 
+                                                   Foreground="#8B5CF6" Margin="0,8,0,8"/>
+                                        <ProgressBar x:Name="GpuBar" Value="0" Maximum="100" Style="{StaticResource ModernProgressBar}" 
+                                                     Foreground="#8B5CF6"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Grid.Column="2" Style="{StaticResource CardBorder}" Margin="8,0">
+                                    <StackPanel>
+                                        <TextBlock Text="内存" FontSize="12" Foreground="#64748B"/>
+                                        <TextBlock x:Name="MemText" Text="0%" FontSize="24" FontWeight="Bold" 
+                                                   Foreground="#10B981" Margin="0,8,0,8"/>
+                                        <ProgressBar x:Name="MemBar" Value="0" Maximum="100" Style="{StaticResource ModernProgressBar}" 
+                                                     Foreground="#10B981"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Grid.Column="3" Style="{StaticResource CardBorder}" Margin="8,0,0,0">
+                                    <StackPanel>
+                                        <TextBlock Text="AI进程" FontSize="12" Foreground="#64748B"/>
+                                        <TextBlock x:Name="AiCpuText" Text="0%" FontSize="24" FontWeight="Bold" 
+                                                   Foreground="#F97316" Margin="0,8,0,8"/>
+                                        <ProgressBar x:Name="AiCpuBar" Value="0" Maximum="100" Style="{StaticResource ModernProgressBar}" 
+                                                     Foreground="#F97316"/>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </Grid>
+
+                        <!-- AI调用页面 -->
+                        <Grid x:Name="AiPage" Visibility="Collapsed">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- 聊天历史 -->
+                            <Border Grid.Row="0" Style="{StaticResource CardBorder}">
+                                <ScrollViewer x:Name="ChatScrollViewer" VerticalScrollBarVisibility="Auto">
+                                    <StackPanel x:Name="ChatContainer">
+                                        <Border Background="#F1F5F9" CornerRadius="12" Padding="15" 
+                                                HorizontalAlignment="Left" MaxWidth="600" Margin="0,0,0,15">
+                                            <TextBlock Text="你好！我是AI助手。请问有什么可以帮助你的吗？" 
+                                                       TextWrapping="Wrap" Foreground="#1E293B" FontSize="14"/>
+                                        </Border>
+                                    </StackPanel>
+                                </ScrollViewer>
+                            </Border>
+
+                            <!-- 输入区域 -->
+                            <Border Grid.Row="1" Style="{StaticResource CardBorder}" Margin="0,15,0,0">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBox x:Name="ChatInput" Grid.Column="0" Style="{StaticResource ModernTextBox}"
+                                             AcceptsReturn="False" KeyDown="ChatInput_KeyDown"/>
+                                    <Button x:Name="SendButton" Grid.Column="1" Content="发送" 
+                                            Style="{StaticResource PrimaryButtonStyle}" 
+                                            Margin="15,0,0,0" Click="SendChat_Click"/>
+                                </Grid>
+                            </Border>
+                        </Grid>
+
+                        <!-- 远控电脑页面 -->
+                        <Grid x:Name="RemotePage" Visibility="Collapsed">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- 连接设置 -->
+                            <Border Grid.Row="0" Style="{StaticResource CardBorder}" Margin="0,0,0,15">
+                                <StackPanel>
+                                    <TextBlock Text="远程连接" FontSize="16" FontWeight="SemiBold" Foreground="#1E293B" 
+                                               Margin="0,0,0,15"/>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBox x:Name="RemoteAddressInput" Grid.Column="0" Style="{StaticResource ModernTextBox}"
+                                                 Text="输入远程连接地址..."/>
+                                        <Button x:Name="ConnectButton" Grid.Column="1" Content="连接" 
+                                                Style="{StaticResource PrimaryButtonStyle}" Margin="15,0,0,0"
+                                                Click="ConnectRemote_Click"/>
+                                        <Button x:Name="DisconnectButton" Grid.Column="2" Content="断开" 
+                                                Background="#EF4444" Style="{StaticResource PrimaryButtonStyle}" 
+                                                Margin="10,0,0,0" Click="DisconnectRemote_Click"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- 远程桌面预览 -->
+                            <Border Grid.Row="1" Style="{StaticResource CardBorder}">
+                                <Grid>
+                                    <Border Background="#1E293B" CornerRadius="12">
+                                        <Grid>
+                                            <TextBlock Text="远程桌面预览区域" Foreground="#64748B" 
+                                                       FontSize="16" HorizontalAlignment="Center" 
+                                                       VerticalAlignment="Center"/>
+                                            <TextBlock x:Name="RemoteStatusText" Text="未连接" Foreground="#94A3B8" 
+                                                       FontSize="14" HorizontalAlignment="Center" 
+                                                       VerticalAlignment="Center" Margin="0,30,0,0"/>
+                                        </Grid>
+                                    </Border>
+                                </Grid>
+                            </Border>
+                        </Grid>
+
+                        <!-- 网站服务器页面 -->
+                        <Grid x:Name="WebServerPage" Visibility="Collapsed">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- 操作栏 -->
+                            <Border Grid.Row="0" Style="{StaticResource CardBorder}" Margin="0,0,0,15">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0" Text="已启动的网站" FontSize="16" FontWeight="SemiBold" 
+                                               Foreground="#1E293B" VerticalAlignment="Center"/>
+                                    <Button Grid.Column="1" Content="添加网站" Style="{StaticResource PrimaryButtonStyle}" 
+                                            Click="AddWebsite_Click"/>
+                                </Grid>
+                            </Border>
+
+                            <!-- 网站列表 -->
+                            <ListBox x:Name="WebsiteListBox" Grid.Row="1" Background="Transparent" 
+                                     BorderThickness="0">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource CardBorder}" Margin="0,0,0,10">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <StackPanel Grid.Column="0">
+                                                    <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="SemiBold" 
+                                                               Foreground="#1E293B"/>
+                                                    <TextBlock Text="{Binding LocalUrl}" FontSize="13" Foreground="#3B82F6" 
+                                                               Margin="0,5,0,0"/>
+                                                </StackPanel>
+
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal" 
+                                                            VerticalAlignment="Center">
+                                                    <Button Content="复制" Style="{StaticResource PrimaryButtonStyle}" 
+                                                            Background="#64748B" Margin="0,0,10,0"
+                                                            Click="CopyWebsiteLink_Click" Tag="{Binding}"/>
+                                                    <Button Content="打开" Style="{StaticResource PrimaryButtonStyle}"
+                                                            Click="OpenWebsite_Click" Tag="{Binding}"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
 </Window>
