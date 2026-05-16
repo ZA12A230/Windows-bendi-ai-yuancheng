@@ -16,6 +16,7 @@ namespace LocalAIStudio
         private OllamaSetupPage? _ollamaSetupPage;
         private ModelsPage? _modelsPage;
         private FrpConfigPage? _frpConfigPage;
+        private RemoteDesktopPage? _remoteDesktopPage;
         private SettingsPage? _settingsPage;
         private int _currentPage = 0;
 
@@ -77,7 +78,15 @@ namespace LocalAIStudio
                     PageContent.Content = _frpConfigPage;
                     break;
 
-                case 3: // 设置
+                case 3: // 远程桌面
+                    if (_remoteDesktopPage == null)
+                    {
+                        _remoteDesktopPage = new RemoteDesktopPage();
+                    }
+                    PageContent.Content = _remoteDesktopPage;
+                    break;
+
+                case 4: // 设置
                     if (_settingsPage == null)
                     {
                         _settingsPage = new SettingsPage();
@@ -89,7 +98,7 @@ namespace LocalAIStudio
 
         private void UpdateNavigationButtons(int activeIndex)
         {
-            var buttons = new Button[] { HomeNavButton, ModelsNavButton, FrpNavButton, SettingsNavButton };
+            var buttons = new Button[] { HomeNavButton, ModelsNavButton, FrpNavButton, RemoteDesktopNavButton, SettingsNavButton };
             for (int i = 0; i < buttons.Length; i++)
             {
                 var border = (Border)buttons[i].Template.FindName("Border", buttons[i]);
@@ -127,9 +136,14 @@ namespace LocalAIStudio
             NavigateToPage(2);
         }
 
-        private void SettingsNavButton_Click(object sender, RoutedEventArgs e)
+        private void RemoteDesktopNavButton_Click(object sender, RoutedEventArgs e)
         {
             NavigateToPage(3);
+        }
+
+        private void SettingsNavButton_Click(object sender, RoutedEventArgs e)
+        {
+            NavigateToPage(4);
         }
 
         private void OllamaSetupPage_SetupCompleted(object? sender, EventArgs e)

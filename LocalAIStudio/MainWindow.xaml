@@ -79,10 +79,14 @@
                                 Style="{StaticResource NavButtonStyle}"
                                 Click="FrpNavButton_Click"
                                 Tag="2"/>
+                        <Button x:Name="RemoteDesktopNavButton" Content="远程桌面" 
+                                Style="{StaticResource NavButtonStyle}"
+                                Click="RemoteDesktopNavButton_Click"
+                                Tag="3"/>
                         <Button x:Name="SettingsNavButton" Content="设置" 
                                 Style="{StaticResource NavButtonStyle}"
                                 Click="SettingsNavButton_Click"
-                                Tag="3"/>
+                                Tag="4"/>
                     </StackPanel>
                 </Border>
 
