@@ -1,0 +1,193 @@
+<UserControl x:Class="LocalAIStudio.Views.ModelsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:LocalAIStudio.Views"
+             mc:Ignorable="d"
+             d:DesignHeight="500" d:DesignWidth="600">
+    <Grid Margin="30">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+            <TextBlock Text="选择本地AI模型" 
+                       FontSize="28" FontWeight="Bold" 
+                       Foreground="#3B82F6"/>
+            <TextBlock Text="选择要使用的本地AI模型，或安装新模型" 
+                       FontSize="14" 
+                       Foreground="#6B8BAA"
+                       Margin="0,5,0,0"/>
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <Border x:Name="EmptyStateBorder" 
+                        Background="#F5F8FF"
+                        CornerRadius="12"
+                        Padding="30"
+                        Margin="0,0,0,20"
+                        Visibility="Collapsed">
+                    <StackPanel>
+                        <TextBlock Text="暂时没有本地AI" 
+                                   FontSize="18" 
+                                   FontWeight="Medium"
+                                   Foreground="#333333"
+                                   HorizontalAlignment="Center"/>
+                        
+                        <TextBlock Text="从以下地址获取模型，或输入模型名称安装"
+                                   FontSize="13" 
+                                   Foreground="#666666"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,8,0,20"/>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="ModelLibraryUrl"
+                                     Text="https://ollama.com/library"
+                                     Grid.Column="0"
+                                     Padding="12,10"
+                                     Background="White"
+                                     BorderBrush="#E0E8FF"
+                                     BorderThickness="1"
+                                     CornerRadius="8"
+                                     Foreground="#333333"/>
+                            <Button x:Name="CopyUrlButton" 
+                                    Grid.Column="1"
+                                    Content="复制"
+                                    Margin="10,0,0,0"
+                                    Padding="15,8"
+                                    Background="#3B82F6"
+                                    Foreground="White"
+                                    BorderThickness="0"
+                                    Click="CopyUrlButton_Click"/>
+                        </Grid>
+
+                        <Grid Margin="0,20,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="ModelInput"
+                                     Grid.Column="0"
+                                     Padding="12,10"
+                                     Background="White"
+                                     BorderBrush="#E0E8FF"
+                                     BorderThickness="1"
+                                     CornerRadius="8"
+                                     Foreground="#333333"
+                                     FontFamily="Consolas"
+                                     Text="ollama run llama2"/>
+                            <Button x:Name="InstallButton" 
+                                    Grid.Column="1"
+                                    Content="安装"
+                                    Margin="10,0,0,0"
+                                    Padding="20,10"
+                                    Background="#10B981"
+                                    Foreground="White"
+                                    BorderThickness="0"
+                                    Click="InstallButton_Click"/>
+                        </Grid>
+
+                        <Border x:Name="InstallProgressBorder"
+                                Margin="0,15,0,0"
+                                Padding="15"
+                                Background="White"
+                                CornerRadius="8"
+                                Visibility="Collapsed">
+                            <StackPanel>
+                                <TextBlock x:Name="InstallStatusText" 
+                                           Text="正在安装..." 
+                                           FontSize="13"
+                                           Foreground="#666666"/>
+                                <ProgressBar x:Name="InstallProgressBar"
+                                             Height="6"
+                                             Margin="0,10,0,0"
+                                             Background="#E0E8FF"
+                                             Foreground="#3B82F6"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <Border x:Name="ModelsListBorder"
+                        Background="#F5F8FF"
+                        CornerRadius="12"
+                        Padding="20"
+                        Margin="0,0,0,20">
+                    <ItemsControl x:Name="ModelsList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border x:Name="ModelItemBorder"
+                                        Background="White"
+                                        CornerRadius="10"
+                                        Padding="15"
+                                        Margin="0,0,0,10">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <CheckBox x:Name="ModelCheckBox" 
+                                                  Grid.Column="0"
+                                                  Margin="0,0,15,0"
+                                                  VerticalAlignment="Center"
+                                                  Checked="ModelCheckBox_Changed"
+                                                  Unchecked="ModelCheckBox_Changed">
+                                            <CheckBox.Template>
+                                                <ControlTemplate TargetType="CheckBox">
+                                                    <Border x:Name="CheckBorder"
+                                                            Width="24"
+                                                            Height="24"
+                                                            CornerRadius="12"
+                                                            Background="White"
+                                                            BorderBrush="#3B82F6"
+                                                            BorderThickness="2">
+                                                        <Path x:Name="CheckMark"
+                                                              Data="M 7,12 L 11,16 L 18,9"
+                                                              Stroke="White"
+                                                              StrokeThickness="2"
+                                                              StrokeLineCap="Round"
+                                                              StrokeLineJoin="Round"
+                                                              Visibility="Collapsed"/>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsChecked" Value="True">
+                                                            <Setter TargetName="CheckBorder" Property="Background" Value="#3B82F6"/>
+                                                            <Setter TargetName="CheckMark" Property="Visibility" Value="Visible"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </CheckBox.Template>
+                                        </CheckBox>
+
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="{Binding Name}"
+                                                       FontSize="15"
+                                                       FontWeight="Medium"
+                                                       Foreground="#333333"/>
+                                            <TextBlock Text="{Binding Size}"
+                                                       FontSize="12"
+                                                       Foreground="#666666"
+                                                       Margin="0,3,0,0"/>
+                                            <TextBlock Text="{Binding Modified}"
+                                                       FontSize="11"
+                                                       Foreground="#999999"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

@@ -1,0 +1,196 @@
+<UserControl x:Class="LocalAIStudio.Views.OllamaSetupPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:LocalAIStudio.Views"
+             mc:Ignorable="d"
+             d:DesignHeight="400" d:DesignWidth="600">
+    <Grid>
+        <StackPanel>
+            <TextBlock Text="Local AI Studio" 
+                       FontSize="36" FontWeight="Bold" 
+                       Foreground="#3B82F6" 
+                       HorizontalAlignment="Center"/>
+            <TextBlock Text="Powering AI applications locally"
+                       FontSize="14" Foreground="#6B8BAA"
+                       HorizontalAlignment="Center" Margin="0,5,0,20"/>
+
+            <Border Background="#F5F8FF" 
+                    CornerRadius="12"
+                    Padding="25"
+                    Margin="0,20,0,0">
+                <StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border x:Name="CheckIconContainer" 
+                                Width="50" Height="50"
+                                Background="#E8F5E9"
+                                CornerRadius="25"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center">
+                            <Viewbox Width="24" Height="24" 
+                                     HorizontalAlignment="Center"
+                                     VerticalAlignment="Center">
+                                <Path x:Name="CheckIcon" 
+                                      Data="M 20,6 L 9,17 L 4,12"
+                                      Stroke="#4CAF50"
+                                      StrokeThickness="3"
+                                      StrokeLineCap="Round"
+                                      StrokeLineJoin="Round"
+                                      Fill="Transparent"
+                                      Visibility="Collapsed"/>
+                                <Ellipse x:Name="Spinner" 
+                                         Fill="Transparent"
+                                         Stroke="#CCCCCC"
+                                         StrokeThickness="2"/>
+                            </Viewbox>
+                        </Border>
+
+                        <StackPanel Margin="20,0,0,0">
+                            <TextBlock x:Name="StatusTitle" 
+                                       Text="检测中..."
+                                       FontSize="16"
+                                       FontWeight="Medium"
+                                       Foreground="#333333"/>
+                            <TextBlock x:Name="StatusMessage"
+                                       Text="正在检查 Ollama 安装状态..."
+                                       FontSize="13"
+                                       Foreground="#666666"
+                                       TextWrapping="Wrap"
+                                       Margin="0,5,0,0"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <StackPanel x:Name="InstallLinksPanel" 
+                                Margin="0,20,0,0"
+                                Visibility="Collapsed">
+                        <TextBlock Text="请下载并安装 Ollama 以继续："
+                                   FontSize="13" Foreground="#555555"/>
+
+                        <Border Background="#FFFFFF" 
+                                CornerRadius="8"
+                                Padding="15"
+                                Margin="0,10,0,0">
+                            <StackPanel>
+                                <TextBlock Text="官方下载地址" 
+                                           FontSize="12" 
+                                           Foreground="#3B82F6"
+                                           Cursor="Hand"
+                                           x:Name="OfficialLink"
+                                           MouseLeftButtonUp="OfficialLink_MouseUp">
+                                    <TextBlock.TextDecorations>
+                                        <TextDecorationCollection>
+                                            <TextDecoration/>
+                                        </TextDecorationCollection>
+                                    </TextBlock.TextDecorations>
+                                </TextBlock>
+                                <TextBlock Text="https://ollama.com/download"
+                                           FontSize="11" 
+                                           Foreground="#666666"
+                                           TextWrapping="Wrap"
+                                           Margin="0,3,0,0"/>
+
+                                <Button Content="复制" 
+                                        HorizontalAlignment="Left"
+                                        Width="60" Height="28"
+                                        Margin="0,8,0,0"
+                                        Background="#3B82F6"
+                                        Foreground="White"
+                                        BorderThickness="0"
+                                        FontSize="11"
+                                        Click="CopyOfficialLink_Click"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Background="#FFFFFF" 
+                                CornerRadius="8"
+                                Padding="15"
+                                Margin="0,10,0,0">
+                            <StackPanel>
+                                <TextBlock Text="国内加速下载地址" 
+                                           FontSize="12" 
+                                           Foreground="#3B82F6"
+                                           Cursor="Hand"
+                                           x:Name="AliyunLink"
+                                           MouseLeftButtonUp="AliyunLink_MouseUp">
+                                    <TextBlock.TextDecorations>
+                                        <TextDecorationCollection>
+                                            <TextDecoration/>
+                                        </TextDecorationCollection>
+                                    </TextBlock.TextDecorations>
+                                </TextBlock>
+                                <TextBlock Text="https://mirrors.aliyun.com/ollama/windows"
+                                           FontSize="11" 
+                                           Foreground="#666666"
+                                           TextWrapping="Wrap"
+                                           Margin="0,3,0,0"/>
+
+                                <Button Content="复制" 
+                                        HorizontalAlignment="Left"
+                                        Width="60" Height="28"
+                                        Margin="0,8,0,0"
+                                        Background="#3B82F6"
+                                        Foreground="White"
+                                        BorderThickness="0"
+                                        FontSize="11"
+                                        Click="CopyAliyunLink_Click"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Button x:Name="OneClickDeployButton" 
+                                Content="一键部署"
+                                Width="140" Height="38"
+                                Margin="0,20,0,0"
+                                Background="#10B981"
+                                Foreground="White"
+                                BorderThickness="0"
+                                FontSize="14"
+                                FontWeight="Medium"
+                                Cursor="Hand"
+                                Click="OneClickDeploy_Click">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="ButtonBorder" 
+                                            Background="{TemplateBinding Background}"
+                                            CornerRadius="19"
+                                            Padding="15,0">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#059669"
+                                                    TargetName="ButtonBorder"/>
+                                        </Trigger>
+                                        <Trigger Property="IsEnabled" Value="False">
+                                            <Setter Property="Background" Value="#94A3B8"
+                                                    TargetName="ButtonBorder"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+
+                        <Border x:Name="ProgressPanel" 
+                                Visibility="Collapsed"
+                                Margin="0,15,0,0">
+                            <TextBlock x:Name="ProgressText"
+                                       Text="正在下载..."
+                                       FontSize="12"
+                                       Foreground="#666666"
+                                       Margin="0,0,0,8"/>
+                            <ProgressBar x:Name="InstallProgressBar" 
+                                         Height="8"
+                                         Background="#E0E8FF"
+                                         Foreground="#3B82F6"/>
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </Grid>
+</UserControl>

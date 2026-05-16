@@ -1,14 +1,11 @@
 using System;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Threading;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
-using System.Windows.Media;
 using System.Windows.Media.Animation;
 using Hardcodet.Wpf.TaskbarNotification;
+using LocalAIStudio.Views;
 using LocalAIStudio.Services;
 
 namespace LocalAIStudio
@@ -17,8 +14,9 @@ namespace LocalAIStudio
     {
         private TaskbarIcon? _notifyIcon;
         private bool _isButtonMoved = false;
-        private bool _ollamaInstalled = false;
-        private CancellationTokenSource? _cancellationTokenSource;
+        private OllamaSetupPage? _ollamaSetupPage;
+        private ModelsPage? _modelsPage;
+        private int _currentStep = 0;
 
         public MainWindow()
         {
@@ -30,162 +28,118 @@ namespace LocalAIStudio
             _notifyIcon = (TaskbarIcon)FindResource("NotifyIcon");
             EnableBlurEffect();
             PlayEntryAnimation();
-            CheckOllamaInstallation();
+            ShowStep(_currentStep);
         }
 
-        private async void CheckOllamaInstallation()
+        private void ShowStep(int step)
         {
-            await Task.Delay(500);
+            _currentStep = step;
 
-            var isInstalled = OllamaService.IsInstalled();
-            _ollamaInstalled = isInstalled;
+            switch (step)
+            {
+                case 0:
+                    if (_ollamaSetupPage == null)
+                    {
+                        _ollamaSetupPage = new OllamaSetupPage();
+                        _ollamaSetupPage.SetupCompleted += OllamaSetupPage_SetupCompleted;
+                    }
+                    PageContent.Content = _ollamaSetupPage;
+                    NextButton.IsEnabled = _ollamaSetupPage.IsOllamaInstalled;
+                    break;
 
-            if (isInstalled)
-            {
-                ShowInstalledSuccess();
-            }
-            else
-            {
-                ShowInstallLinks();
+                case 1:
+                    if (_modelsPage == null)
+                    {
+                        _modelsPage = new ModelsPage();
+                    }
+                    PageContent.Content = _modelsPage;
+                    NextButton.Content = "启动服务";
+                    NextButton.IsEnabled = true;
+                    break;
             }
         }
 
-        private void ShowInstalledSuccess()
+        private void OllamaSetupPage_SetupCompleted(object? sender, EventArgs e)
         {
-            StatusTitle.Text = "已检测到 Ollama";
-            StatusMessage.Text = "Ollama 已成功安装在您的系统上。";
-            Spinner.Visibility = Visibility.Collapsed;
-            CheckIcon.Visibility = Visibility.Visible;
-            InstallLinksPanel.Visibility = Visibility.Collapsed;
             NextButton.IsEnabled = true;
-
-            PlayCheckmarkAnimation();
         }
 
-        private void ShowInstallLinks()
+        private async void NextButton_Click(object sender, RoutedEventArgs e)
         {
-            StatusTitle.Text = "暂未安装 Ollama";
-            StatusMessage.Text = "请安装 Ollama 以继续使用 Local AI Studio。";
-            Spinner.Visibility = Visibility.Collapsed;
-            CheckIcon.Visibility = Visibility.Collapsed;
-            InstallLinksPanel.Visibility = Visibility.Visible;
+            if (_currentStep == 0)
+            {
+                if (!_isButtonMoved)
+                {
+                    AnimateButtonToBottomRight();
+                    _isButtonMoved = true;
+
+                    // 等待动画完成，然后切页
+                    await System.Threading.Tasks.Task.Delay(600);
+                    ShowStep(1);
+                }
+            }
+            else if (_currentStep == 1)
+            {
+                await StartSelectedModelsAsync();
+            }
+        }
+
+        private async System.Threading.Tasks.Task StartSelectedModelsAsync()
+        {
+            if (_modelsPage == null)
+                return;
+
+            var selectedModels = _modelsPage.GetSelectedModels();
+            if (selectedModels.Count == 0)
+            {
+                MessageBox.Show("请至少选择一个模型", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
             NextButton.IsEnabled = false;
-        }
-
-        private void PlayCheckmarkAnimation()
-        {
-            var duration = new Duration(TimeSpan.FromMilliseconds(600));
-            var bounceEase = new BounceEase
-            {
-                Bounces = 2,
-                Bounciness = 5,
-                EasingMode = EasingMode.EaseOut
-            };
-
-            var scaleTransform = new ScaleTransform(0.1, 0.1);
-            CheckIconContainer.RenderTransform = scaleTransform;
-            CheckIconContainer.RenderTransformOrigin = new Point(0.5, 0.5);
-
-            var scaleAnim = new DoubleAnimation
-            {
-                From = 0.1,
-                To = 1,
-                Duration = duration,
-                EasingFunction = bounceEase
-            };
-
-            scaleTransform.BeginAnimation(ScaleTransform.ScaleXProperty, scaleAnim);
-            scaleTransform.BeginAnimation(ScaleTransform.ScaleYProperty, scaleAnim);
-        }
-
-        private async void OneClickDeploy_Click(object sender, RoutedEventArgs e)
-        {
-            if (_cancellationTokenSource != null) return;
-
-            OneClickDeployButton.IsEnabled = false;
-            ProgressPanel.Visibility = Visibility.Visible;
-            InstallProgressBar.Value = 0;
-
-            _cancellationTokenSource = new CancellationTokenSource();
+            NextButton.Content = "启动中...";
 
             try
             {
-                var progress = new Progress<int>(percent =>
-                {
-                    InstallProgressBar.Value = percent;
-                });
+                await OllamaService.StartOllamaServeAsync();
+                MessageBox.Show($"成功启动 {selectedModels.Count} 个模型！", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                var status = new Progress<string>(msg =>
-                {
-                    ProgressText.Text = msg;
-                });
-
-                await OllamaService.DownloadAndInstallAsync(progress, status, _cancellationTokenSource.Token);
-
-                await Task.Delay(500);
-                _ollamaInstalled = true;
-                ShowInstalledSuccess();
-                MessageBox.Show("Ollama 安装成功！", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            catch (OperationCanceledException)
-            {
-                MessageBox.Show("安装已取消。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                // 下一步：可以在这里添加跳转到聊天页面或其他功能
+                // 目前这里暂时只是完成安装向导
+                MessageBox.Show("设置完成！", "完成", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"安装失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
-                OneClickDeployButton.IsEnabled = true;
-                ProgressPanel.Visibility = Visibility.Collapsed;
+                MessageBox.Show($"启动服务失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
-                _cancellationTokenSource?.Dispose();
-                _cancellationTokenSource = null;
+                NextButton.IsEnabled = true;
+                NextButton.Content = "启动服务";
             }
         }
 
-        private void CopyOfficialLink_Click(object sender, RoutedEventArgs e)
+        private void AnimateButtonToBottomRight()
         {
-            Clipboard.SetText("https://ollama.com/download");
-            ShowCopySuccess();
-        }
+            var buttonTransform = (TranslateTransform)NextButton.RenderTransform;
 
-        private void CopyAliyunLink_Click(object sender, RoutedEventArgs e)
-        {
-            Clipboard.SetText("https://mirrors.aliyun.com/ollama/windows");
-            ShowCopySuccess();
-        }
+            var containerWidth = ButtonContainer.ActualWidth;
+            var buttonWidth = NextButton.ActualWidth;
 
-        private void ShowCopySuccess()
-        {
-            var originalButton = sender as Button;
-            if (originalButton != null)
+            var dx = containerWidth / 2 - buttonWidth / 2 - 40;
+
+            var duration = new Duration(TimeSpan.FromMilliseconds(500));
+            var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
+
+            var xAnim = new DoubleAnimation
             {
-                var originalContent = originalButton.Content;
-                originalButton.Content = "已复制";
-                Task.Delay(1500).ContinueWith(_ => Dispatcher.BeginInvoke(() =>
-                {
-                    originalButton.Content = originalContent;
-                }));
-            }
-        }
+                From = 0,
+                To = dx,
+                Duration = duration,
+                EasingFunction = ease
+            };
 
-        private void OfficialLink_MouseUp(object sender, MouseButtonEventArgs e)
-        {
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = "https://ollama.com/download",
-                UseShellExecute = true
-            });
-        }
-
-        private void AliyunLink_MouseUp(object sender, MouseButtonEventArgs e)
-        {
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = "https://mirrors.aliyun.com/ollama/windows",
-                UseShellExecute = true
-            });
+            buttonTransform.BeginAnimation(TranslateTransform.XProperty, xAnim);
         }
 
         private void EnableBlurEffect()
@@ -239,39 +193,6 @@ namespace LocalAIStudio
             scaleTransform.BeginAnimation(ScaleTransform.ScaleYProperty, scaleAnim);
         }
 
-        private void NextButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (!_isButtonMoved && _ollamaInstalled)
-            {
-                AnimateButtonToBottomRight();
-                _isButtonMoved = true;
-            }
-        }
-
-        private void AnimateButtonToBottomRight()
-        {
-            var buttonTransform = (TranslateTransform)NextButton.RenderTransform;
-
-            var containerWidth = ButtonContainer.ActualWidth;
-            var buttonWidth = NextButton.ActualWidth;
-
-            var dx = containerWidth / 2 - buttonWidth / 2 - 40;
-            var dy = 0;
-
-            var duration = new Duration(TimeSpan.FromMilliseconds(500));
-            var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
-
-            var xAnim = new DoubleAnimation
-            {
-                From = 0,
-                To = dx,
-                Duration = duration,
-                EasingFunction = ease
-            };
-
-            buttonTransform.BeginAnimation(TranslateTransform.XProperty, xAnim);
-        }
-
         private void TitleBar_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left)
@@ -308,7 +229,6 @@ namespace LocalAIStudio
         }
 
         #region Window Interop
-
         internal enum AccentState
         {
             ACCENT_DISABLED = 0,
@@ -349,7 +269,6 @@ namespace LocalAIStudio
 
         [DllImport("user32.dll")]
         internal static extern int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttributeData data);
-
         #endregion
     }
 }
