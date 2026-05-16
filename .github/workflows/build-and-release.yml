@@ -1,0 +1,93 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g., v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  PROJECT_NAME: 'LocalAIStudio'
+  SOLUTION_FILE: 'LocalAIStudio.sln'
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Restore dependencies
+      run: dotnet restore ${{ env.SOLUTION_FILE }}
+
+    - name: Build
+      run: dotnet build ${{ env.SOLUTION_FILE }} -c Release --no-restore
+
+    - name: Publish Single File EXE
+      run: |
+        dotnet publish LocalAIStudio/LocalAIStudio.csproj `
+          -c Release `
+          -r win-x64 `
+          --self-contained true `
+          -p:PublishSingleFile=true `
+          -p:IncludeNativeLibrariesForSelfExtract=true `
+          -p:EnableCompressionInSingleFile=true `
+          -p:DebugType=None `
+          -p:DebugSymbols=false `
+          -o ./publish
+
+    - name: Create Release Archive
+      run: |
+        Compress-Archive -Path ./publish/* -DestinationPath ./${{ env.PROJECT_NAME }}-win-x64.zip -Force
+        
+    - name: Get Release Notes
+      id: release_notes
+      run: |
+        $commitMessage = git log -1 --pretty=%B
+        $releaseNotes = Get-Content README.md | Select-Object -First 50
+        $releaseNotes | Out-File -Encoding UTF8 release_notes.md
+        echo "commit_message=$commitMessage" >> $env:GITHUB_OUTPUT
+
+    - name: Create Release
+      id: create_release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ github.event.inputs.version || github.ref_name }}
+        name: Release ${{ github.event.inputs.version || github.ref_name }}
+        body_path: ./release_notes.md
+        draft: false
+        prerelease: false
+        files: |
+          ${{ env.PROJECT_NAME }}-win-x64.zip
+        fail_on_unmatched_files: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload EXE as Release Asset
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ github.event.inputs.version || github.ref_name }}
+        files: ./publish/${{ env.PROJECT_NAME }}.exe
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-success:
+    needs: [build-windows]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Build Complete
+      run: echo "Build and Release completed successfully!"

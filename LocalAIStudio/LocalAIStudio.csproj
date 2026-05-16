@@ -16,6 +16,8 @@
     <Description>本地AI工作室 - Ollama管理、远程桌面、硬件监控、网站托管</Description>
     <Copyright>Copyright © 2025</Copyright>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <RepositoryUrl>https://github.com/ZA12A230/Windows-bendi-ai-yuancheng</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>
