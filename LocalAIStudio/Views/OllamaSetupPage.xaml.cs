@@ -11,9 +11,9 @@ namespace LocalAIStudio.Views
     public partial class OllamaSetupPage : UserControl
     {
         public event EventHandler? SetupCompleted;
-
         private CancellationTokenSource? _cancellationTokenSource;
         private bool _isOllamaInstalled = false;
+        private MirrorSource? _selectedMirror;
 
         public OllamaSetupPage()
         {
@@ -49,9 +49,10 @@ namespace LocalAIStudio.Views
             Spinner.Visibility = Visibility.Collapsed;
             CheckIcon.Visibility = Visibility.Visible;
             InstallLinksPanel.Visibility = Visibility.Collapsed;
+            MirrorConfigPanel.Visibility = Visibility.Visible;
 
+            LoadMirrorSources();
             PlayCheckAnimation();
-            SetupCompleted?.Invoke(this, EventArgs.Empty);
         }
 
         private void ShowInstallLinks()
@@ -61,6 +62,19 @@ namespace LocalAIStudio.Views
             Spinner.Visibility = Visibility.Collapsed;
             CheckIcon.Visibility = Visibility.Collapsed;
             InstallLinksPanel.Visibility = Visibility.Visible;
+            MirrorConfigPanel.Visibility = Visibility.Collapsed;
+        }
+
+        private void LoadMirrorSources()
+        {
+            var mirrors = OllamaService.GetAvailableMirrorSources();
+            MirrorSourceComboBox.ItemsSource = mirrors;
+            var defaultMirror = mirrors.Find(m => m.IsDefault);
+            if (defaultMirror != null)
+            {
+                MirrorSourceComboBox.SelectedItem = defaultMirror;
+            }
+            ConfigPathText.Text = $"配置文件位置: {OllamaService.GetOllamaConfigPath()}";
         }
 
         private void PlayCheckAnimation()
@@ -123,7 +137,7 @@ namespace LocalAIStudio.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"安装失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"安装失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 OneClickDeployButton.IsEnabled = true;
                 ProgressPanel.Visibility = Visibility.Collapsed;
             }
@@ -180,6 +194,118 @@ namespace LocalAIStudio.Views
                 FileName = "https://mirrors.aliyun.com/ollama/windows",
                 UseShellExecute = true
             });
+        }
+
+        private void MirrorSourceComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            _selectedMirror = MirrorSourceComboBox.SelectedItem as MirrorSource;
+        }
+
+        private async void TestMirrorButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_selectedMirror == null || _selectedMirror.Url == "auto")
+            {
+                MirrorStatusText.Text = "请选择一个有效的镜像源进行测试";
+                return;
+            }
+
+            TestMirrorButton.IsEnabled = false;
+            MirrorStatusText.Text = "正在测试连接...";
+
+            try
+            {
+                var isAvailable = await OllamaService.TestMirrorConnectivityAsync(_selectedMirror.Url);
+                if (isAvailable)
+                {
+                    MirrorStatusText.Text = $"✓ {_selectedMirror.Name} 连接成功！";
+                    MirrorStatusText.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x10, 0xB9, 0x81));
+                }
+                else
+                {
+                    MirrorStatusText.Text = $"✗ {_selectedMirror.Name} 连接失败";
+                    MirrorStatusText.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xEF, 0x44, 0x44));
+                }
+            }
+            catch (Exception ex)
+            {
+                MirrorStatusText.Text = $"测试失败: {ex.Message}";
+                MirrorStatusText.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xEF, 0x44, 0x44));
+            }
+            finally
+            {
+                TestMirrorButton.IsEnabled = true;
+            }
+        }
+
+        private async void AutoSelectButton_Click(object sender, RoutedEventArgs e)
+        {
+            AutoSelectButton.IsEnabled = false;
+            MirrorStatusText.Text = "正在自动选择最佳镜像...";
+
+            try
+            {
+                var bestMirror = await OllamaService.AutoSelectBestMirrorAsync();
+                if (bestMirror != null)
+                {
+                    MirrorSourceComboBox.SelectedItem = bestMirror;
+                    MirrorStatusText.Text = $"✓ 已自动选择最佳镜像: {bestMirror.Name}";
+                    MirrorStatusText.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x10, 0xB9, 0x81));
+                }
+                else
+                {
+                    MirrorStatusText.Text = "无法找到可用镜像源，请手动选择";
+                    MirrorStatusText.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xEF, 0x44, 0x44));
+                }
+            }
+            catch (Exception ex)
+            {
+                MirrorStatusText.Text = $"自动选择失败: {ex.Message}";
+                MirrorStatusText.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xEF, 0x44, 0x44));
+            }
+            finally
+            {
+                AutoSelectButton.IsEnabled = true;
+            }
+        }
+
+        private void ApplyMirrorButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_selectedMirror == null)
+            {
+                MessageBox.Show("请先选择一个镜像源", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            ApplyMirrorButton.IsEnabled = false;
+
+            try
+            {
+                bool isAuto = _selectedMirror.Url == "auto";
+                bool success = OllamaService.SetMirrorSource(_selectedMirror.Url, isAuto);
+
+                if (success)
+                {
+                    MessageBox.Show($"镜像源配置成功！\n\n当前镜像: {_selectedMirror.Name}\n\n建议重启 Ollama 服务以确保配置生效。",
+                        "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show("镜像源配置失败，请检查权限", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"配置失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                ApplyMirrorButton.IsEnabled = true;
+            }
+        }
+
+        private void ContinueButton_Click(object sender, RoutedEventArgs e)
+        {
+            SetupCompleted?.Invoke(this, EventArgs.Empty);
         }
 
         public bool IsOllamaInstalled => _isOllamaInstalled;
