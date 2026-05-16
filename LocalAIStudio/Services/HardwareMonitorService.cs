@@ -10,6 +10,7 @@ using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using NAudio.Wave;
 
 namespace LocalAIStudio.Services
 {
@@ -44,21 +45,29 @@ namespace LocalAIStudio.Services
         private Thread? _captureThread;
         private byte[]? _lastFrame;
         private DateTime _lastFrameTime;
+        
+        private WaveOutEvent? _waveOut;
+        private WaveFileReader? _waveReader;
+        private BufferedWaveProvider? _bufferedWaveProvider;
+        private bool _intercomActive = false;
 
-        // 状态事件
         public event EventHandler<bool>? CameraStateChanged;
         public event EventHandler<bool>? MicrophoneActiveChanged;
+        public event EventHandler<bool>? IntercomStateChanged;
         public event EventHandler? RemoteAccessStarted;
         public event EventHandler? RemoteAccessStopped;
+        public event EventHandler<byte[]>? AudioDataReceived;
 
         public bool IsCameraActive => _cameraActive;
         public bool IsRemoteAccessActive => _isMonitoring;
+        public bool IsIntercomActive => _intercomActive;
 
         public HardwareMonitorService()
         {
         }
 
         #region Camera Functions
+        
         public bool InitializeCamera()
         {
             try
@@ -97,7 +106,6 @@ namespace LocalAIStudio.Services
                 {
                     if (!InitializeCamera())
                     {
-                        // Fallback to screenshot if camera fails
                         return CaptureScreenShot();
                     }
                 }
@@ -125,7 +133,7 @@ namespace LocalAIStudio.Services
             {
                 Debug.WriteLine($"Capture frame error: {ex.Message}");
             }
-            return _lastFrame; // Return last captured frame
+            return _lastFrame;
         }
 
         public byte[]? CaptureScreenShot()
@@ -173,24 +181,123 @@ namespace LocalAIStudio.Services
         }
         #endregion
 
-        #region Audio Functions
-        public async Task PlayRemoteAudio(byte[] audioData)
+        #region Intercom Functions（对讲功能 - 远程说话主机发声）
+        
+        public void StartIntercom()
         {
             try
             {
-                // Save audio to temp file and play
+                if (_intercomActive) return;
+
+                _intercomActive = true;
+                
+                _bufferedWaveProvider = new BufferedWaveProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2))
+                {
+                    DiscardOnBufferOverflow = true,
+                    BufferDuration = TimeSpan.FromSeconds(5)
+                };
+
+                _waveOut = new WaveOutEvent();
+                _waveOut.Init(_bufferedWaveProvider);
+                _waveOut.Play();
+
+                IntercomStateChanged?.Invoke(this, true);
+                MicrophoneActiveChanged?.Invoke(this, true);
+                Debug.WriteLine("Intercom started - remote audio will play on host speakers");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Start intercom error: {ex.Message}");
+                _intercomActive = false;
+            }
+        }
+
+        public void StopIntercom()
+        {
+            try
+            {
+                _intercomActive = false;
+
+                _waveOut?.Stop();
+                _waveOut?.Dispose();
+                _waveOut = null;
+
+                _waveReader?.Dispose();
+                _waveReader = null;
+
+                _bufferedWaveProvider = null;
+
+                IntercomStateChanged?.Invoke(this, false);
+                MicrophoneActiveChanged?.Invoke(this, false);
+                Debug.WriteLine("Intercom stopped");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Stop intercom error: {ex.Message}");
+            }
+        }
+
+        public async Task PlayRemoteAudio(byte[] audioData)
+        {
+            if (!_intercomActive || _bufferedWaveProvider == null)
+            {
+                Debug.WriteLine("Intercom not active, audio data ignored");
+                return;
+            }
+
+            try
+            {
+                AudioDataReceived?.Invoke(this, audioData);
+                _bufferedWaveProvider.AddSamples(audioData, 0, audioData.Length);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Play remote audio error: {ex.Message}");
+            }
+        }
+
+        public async Task PlayRemoteAudioWav(byte[] wavData)
+        {
+            try
+            {
+                using (var ms = new MemoryStream(wavData))
+                {
+                    var reader = new WaveFileReader(ms);
+                    
+                    var waveOut = new WaveOutEvent();
+                    waveOut.Init(reader);
+                    waveOut.Play();
+
+                    while (waveOut.PlaybackState == PlaybackState.Playing)
+                    {
+                        await Task.Delay(100);
+                    }
+
+                    waveOut.Stop();
+                    waveOut.Dispose();
+                    reader.Dispose();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Play WAV audio error: {ex.Message}");
+                await PlayMp3OrOther(audioData);
+            }
+        }
+
+        private async Task PlayMp3OrOther(byte[] audioData)
+        {
+            try
+            {
                 var tempPath = Path.Combine(Path.GetTempPath(), $"temp_audio_{Guid.NewGuid()}.wav");
                 await File.WriteAllBytesAsync(tempPath, audioData);
 
-                // Play using media player
-                var process = new ProcessStartInfo
+                Process.Start(new ProcessStartInfo
                 {
                     FileName = tempPath,
                     UseShellExecute = true
-                };
-                Process.Start(process);
+                });
 
-                // Cleanup
                 _ = Task.Delay(30000).ContinueWith(t =>
                 {
                     if (File.Exists(tempPath))
@@ -201,18 +308,8 @@ namespace LocalAIStudio.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Play remote audio error: {ex.Message}");
+                Debug.WriteLine($"Play audio error: {ex.Message}");
             }
-        }
-
-        public void StartMicrophoneForwarding()
-        {
-            MicrophoneActiveChanged?.Invoke(this, true);
-        }
-
-        public void StopMicrophoneForwarding()
-        {
-            MicrophoneActiveChanged?.Invoke(this, false);
         }
         #endregion
 
@@ -223,7 +320,6 @@ namespace LocalAIStudio.Services
 
             try
             {
-                // Use Windows Native WiFi API
                 var process = new ProcessStartInfo
                 {
                     FileName = "netsh",
@@ -242,7 +338,6 @@ namespace LocalAIStudio.Services
                     }
                 }
 
-                // Fallback to WMI
                 if (wifiList.Count == 0)
                 {
                     GetWifiFromWMI(wifiList);
@@ -288,6 +383,16 @@ namespace LocalAIStudio.Services
                     {
                         currentWifi.IsConnected = parts[1].Trim().Contains("connected");
                     }
+                }
+                else if (line.Trim().StartsWith("BSSID") && currentWifi != null)
+                {
+                    var parts = line.Split(':');
+                    if (parts.Length > 1) currentWifi.BSSID = parts[1].Trim();
+                }
+                else if (line.Trim().StartsWith("Channel") && currentWifi != null)
+                {
+                    var parts = line.Split(':');
+                    if (parts.Length > 1) currentWifi.Channel = parts[1].Trim();
                 }
             }
 
@@ -410,7 +515,7 @@ namespace LocalAIStudio.Services
         {
             _isMonitoring = false;
             StopCamera();
-            StopMicrophoneForwarding();
+            StopIntercom();
             RemoteAccessStopped?.Invoke(this, EventArgs.Empty);
         }
         #endregion

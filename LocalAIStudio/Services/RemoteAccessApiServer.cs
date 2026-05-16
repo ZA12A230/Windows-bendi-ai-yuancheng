@@ -25,7 +25,6 @@ namespace LocalAIStudio.Services
         private string? _currentUsername;
         private string? _currentPasswordHash;
 
-        // Events
         public event EventHandler? ApiServerStarted;
         public event EventHandler? ApiServerStopped;
         public event EventHandler<string>? AccessLogReceived;
@@ -57,7 +56,6 @@ namespace LocalAIStudio.Services
 
                 HardwareMonitorService.Instance.StartRemoteAccessMonitoring();
 
-                // Start listening loop
                 _ = Task.Run(() => ListenLoop(_cts.Token));
             }
             catch (Exception ex)
@@ -117,10 +115,9 @@ namespace LocalAIStudio.Services
         {
             if (string.IsNullOrEmpty(_currentUsername) || string.IsNullOrEmpty(_currentPasswordHash))
             {
-                return true; // Allow access if no credentials set
+                return true;
             }
 
-            // Check query parameters
             var query = HttpUtility.ParseQueryString(request.Url.Query);
             var username = query["username"];
             var password = query["password"];
@@ -130,7 +127,6 @@ namespace LocalAIStudio.Services
                 return username == _currentUsername && ComputeHash(password) == _currentPasswordHash;
             }
 
-            // Check Authorization header
             var authHeader = request.Headers["Authorization"];
             if (!string.IsNullOrEmpty(authHeader))
             {
@@ -169,7 +165,6 @@ namespace LocalAIStudio.Services
 
                 LogAccess($"Request: {request.HttpMethod} {request.Url.PathAndQuery}");
 
-                // CORS headers
                 response.AddHeader("Access-Control-Allow-Origin", "*");
                 response.AddHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
                 response.AddHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
@@ -181,14 +176,12 @@ namespace LocalAIStudio.Services
                     return;
                 }
 
-                // Authentication
                 if (!Authenticate(request))
                 {
                     SendErrorResponse(response, "Unauthorized", 401);
                     return;
                 }
 
-                // Route handling
                 await HandleRouteAsync(request, response);
             }
             catch (Exception ex)
@@ -215,6 +208,18 @@ namespace LocalAIStudio.Services
 
                 case "/api/camera/stream":
                     await HandleCameraStream(request, response);
+                    break;
+
+                case "/api/intercom/start":
+                    HandleIntercomStart(response);
+                    break;
+
+                case "/api/intercom/stop":
+                    HandleIntercomStop(response);
+                    break;
+
+                case "/api/intercom/play":
+                    await HandleIntercomPlay(request, response);
                     break;
 
                 case "/api/audio/play":
@@ -244,7 +249,7 @@ namespace LocalAIStudio.Services
         }
         #endregion
 
-        #region API Endpoints
+        #region Camera API Endpoints
         private async Task HandleCameraSnapshot(HttpListenerRequest request, HttpListenerResponse response)
         {
             var frame = HardwareMonitorService.Instance.CaptureFrame();
@@ -286,22 +291,56 @@ namespace LocalAIStudio.Services
             }
             catch
             {
-                // Client disconnected
             }
             response.Close();
         }
+        #endregion
 
-        private async Task HandleAudioPlay(HttpListenerRequest request, HttpListenerResponse response)
+        #region Intercom API Endpoints（对讲功能）
+        private void HandleIntercomStart(HttpListenerResponse response)
+        {
+            try
+            {
+                HardwareMonitorService.Instance.StartIntercom();
+                SendJsonResponse(response, new { success = true, message = "对讲已启动" });
+            }
+            catch (Exception ex)
+            {
+                SendErrorResponse(response, $"启动对讲失败: {ex.Message}", 500);
+            }
+        }
+
+        private void HandleIntercomStop(HttpListenerResponse response)
+        {
+            try
+            {
+                HardwareMonitorService.Instance.StopIntercom();
+                SendJsonResponse(response, new { success = true, message = "对讲已停止" });
+            }
+            catch (Exception ex)
+            {
+                SendErrorResponse(response, $"停止对讲失败: {ex.Message}", 500);
+            }
+        }
+
+        private async Task HandleIntercomPlay(HttpListenerRequest request, HttpListenerResponse response)
         {
             if (request.HttpMethod == "POST" && request.HasEntityBody)
             {
-                using (var ms = new MemoryStream())
+                try
                 {
-                    await request.InputStream.CopyToAsync(ms);
-                    var audioData = ms.ToArray();
+                    using (var ms = new MemoryStream())
+                    {
+                        await request.InputStream.CopyToAsync(ms);
+                        var audioData = ms.ToArray();
 
-                    await HardwareMonitorService.Instance.PlayRemoteAudio(audioData);
-                    SendJsonResponse(response, new { success = true });
+                        await HardwareMonitorService.Instance.PlayRemoteAudio(audioData);
+                        SendJsonResponse(response, new { success = true, message = "音频已播放" });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    SendErrorResponse(response, $"播放音频失败: {ex.Message}", 500);
                 }
             }
             else
@@ -310,6 +349,34 @@ namespace LocalAIStudio.Services
             }
         }
 
+        private async Task HandleAudioPlay(HttpListenerRequest request, HttpListenerResponse response)
+        {
+            if (request.HttpMethod == "POST" && request.HasEntityBody)
+            {
+                try
+                {
+                    using (var ms = new MemoryStream())
+                    {
+                        await request.InputStream.CopyToAsync(ms);
+                        var audioData = ms.ToArray();
+
+                        await HardwareMonitorService.Instance.PlayRemoteAudioWav(audioData);
+                        SendJsonResponse(response, new { success = true });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    SendErrorResponse(response, $"播放音频失败: {ex.Message}", 500);
+                }
+            }
+            else
+            {
+                SendErrorResponse(response, "Method Not Allowed", 405);
+            }
+        }
+        #endregion
+
+        #region System Info API Endpoints
         private void HandleGetWifiInfo(HttpListenerResponse response)
         {
             var wifiList = HardwareMonitorService.Instance.GetWifiInfo();
@@ -333,6 +400,7 @@ namespace LocalAIStudio.Services
             var status = new
             {
                 cameraActive = HardwareMonitorService.Instance.IsCameraActive,
+                intercomActive = HardwareMonitorService.Instance.IsIntercomActive,
                 remoteActive = HardwareMonitorService.Instance.IsRemoteAccessActive,
                 serverActive = IsRunning
             };
