@@ -17,6 +17,7 @@ namespace LocalAIStudio
         private ModelsPage? _modelsPage;
         private FrpConfigPage? _frpConfigPage;
         private RemoteDesktopPage? _remoteDesktopPage;
+        private HardwareMonitorPage? _hardwareMonitorPage;
         private SettingsPage? _settingsPage;
         private int _currentPage = 0;
 
@@ -86,7 +87,15 @@ namespace LocalAIStudio
                     PageContent.Content = _remoteDesktopPage;
                     break;
 
-                case 4: // 设置
+                case 4: // 硬件监控
+                    if (_hardwareMonitorPage == null)
+                    {
+                        _hardwareMonitorPage = new HardwareMonitorPage();
+                    }
+                    PageContent.Content = _hardwareMonitorPage;
+                    break;
+
+                case 5: // 设置
                     if (_settingsPage == null)
                     {
                         _settingsPage = new SettingsPage();
@@ -98,7 +107,7 @@ namespace LocalAIStudio
 
         private void UpdateNavigationButtons(int activeIndex)
         {
-            var buttons = new Button[] { HomeNavButton, ModelsNavButton, FrpNavButton, RemoteDesktopNavButton, SettingsNavButton };
+            var buttons = new Button[] { HomeNavButton, ModelsNavButton, FrpNavButton, RemoteDesktopNavButton, HardwareMonitorNavButton, SettingsNavButton };
             for (int i = 0; i < buttons.Length; i++)
             {
                 var border = (Border)buttons[i].Template.FindName("Border", buttons[i]);
@@ -141,9 +150,14 @@ namespace LocalAIStudio
             NavigateToPage(3);
         }
 
-        private void SettingsNavButton_Click(object sender, RoutedEventArgs e)
+        private void HardwareMonitorNavButton_Click(object sender, RoutedEventArgs e)
         {
             NavigateToPage(4);
+        }
+
+        private void SettingsNavButton_Click(object sender, RoutedEventArgs e)
+        {
+            NavigateToPage(5);
         }
 
         private void OllamaSetupPage_SetupCompleted(object? sender, EventArgs e)

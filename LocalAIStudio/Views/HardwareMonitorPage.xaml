@@ -1,0 +1,193 @@
+<UserControl x:Class="LocalAIStudio.Views.HardwareMonitorPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="700" d:DesignWidth="750">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Resources/Styles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+            <TextBlock Text="硬件检测与远程访问" FontSize="30" FontWeight="Bold" 
+                       Foreground="#3B82F6" Margin="0,0,0,20"/>
+
+            <!-- Privacy Warning -->
+            <Border x:Name="PrivacyWarningBorder" 
+                    Background="#FFF3CD" BorderBrush="#FFEEBA" BorderThickness="1"
+                    CornerRadius="10" Padding="15" Margin="0,0,0,15" Visibility="Collapsed">
+                <StackPanel Orientation="Horizontal">
+                    <Ellipse Width="30" Height="30" Fill="#FFCC00" Margin="0,0,10,0">
+                        <Ellipse.Effect>
+                            <DropShadowEffect BlurRadius="15" ShadowDepth="0" Color="#FF0000" Opacity="0.3"/>
+                        </Ellipse.Effect>
+                    </Ellipse>
+                    <StackPanel>
+                        <TextBlock Text="⚠️ 正在被远程查看！" FontSize="16" FontWeight="Bold" Foreground="#856404"/>
+                        <TextBlock Text="摄像头、麦克风或屏幕正在被远程访问。" FontSize="13" Foreground="#856404" Margin="0,3,0,0"/>
+                    </StackPanel>
+                    <Button Content="停止" Width="70" Height="30" Margin="15,0,0,0" Background="#DC3545" Foreground="White"
+                            BorderThickness="0" Click="StopRemoteAccess_Click"/>
+                </StackPanel>
+            </Border>
+
+            <!-- API Server Status -->
+            <Border Background="#E7F3FF" CornerRadius="12" Padding="15" Margin="0,0,0,15">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="远程访问 API 服务" FontSize="15" FontWeight="Medium" Foreground="#004085"/>
+                        <TextBlock x:Name="ApiStatusText" Text="服务未启动" FontSize="13" Foreground="#495057" Margin="0,3,0,0"/>
+                    </StackPanel>
+
+                    <ToggleButton x:Name="ApiServerToggle" Grid.Column="1" 
+                                  Style="{StaticResource CustomToggleSwitch}"
+                                  Checked="ApiServerToggle_Changed"
+                                  Unchecked="ApiServerToggle_Changed"/>
+                </Grid>
+            </Border>
+
+            <!-- API Configuration -->
+            <Border Background="#F5F8FF" CornerRadius="12" Padding="15" Margin="0,0,0,15">
+                <StackPanel>
+                    <TextBlock Text="API 服务配置" FontSize="15" FontWeight="Medium" Foreground="#333333" Margin="0,0,0,10"/>
+
+                    <Grid Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <TextBlock Grid.Column="0" Text="监听端口" FontSize="13" Foreground="#64748B" VerticalAlignment="Center"/>
+                        <TextBox x:Name="PortTextBox" Grid.Column="1" Style="{StaticResource ModernTextBox}" Text="8080" Width="100"/>
+                    </Grid>
+
+                    <TextBlock Text="访问地址" FontSize="13" Foreground="#64748B" Margin="0,0,0,5"/>
+                    <TextBlock x:Name="AccessUrlText" Text="http://localhost:8080" FontSize="14" Foreground="#007BFF" 
+                               FontFamily="Consolas" TextWrapping="Wrap" Margin="0,0,0,10"/>
+
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="保存配置" Width="120" Height="35" Style="{StaticResource ModernButton}"
+                                Background="#3B82F6" Click="SaveConfig_Click"/>
+                        <Button Content="刷新信息" Width="120" Height="35" Margin="10,0,0,0" Style="{StaticResource ModernButton}"
+                                Background="#6C757D" Click="RefreshInfo_Click"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Camera Section -->
+            <Border Background="#F5F8FF" CornerRadius="12" Padding="15" Margin="0,0,0,15">
+                <StackPanel>
+                    <TextBlock Text="📷 摄像头监控" FontSize="15" FontWeight="Medium" Foreground="#333333" Margin="0,0,0,10"/>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock x:Name="CameraStatusText" Grid.Column="0" 
+                                   Text="未启用" FontSize="13" Foreground="#64748B" VerticalAlignment="Center"/>
+
+                        <Button x:Name="CameraToggleButton" Grid.Column="1" 
+                                Content="启用" Width="100" Height="35" Style="{StaticResource ModernButton}"
+                                Background="#10B981" Click="CameraToggle_Click"/>
+                    </Grid>
+
+                    <!-- Camera Preview Placeholder -->
+                    <Border x:Name="CameraPreviewBorder" Background="#000000" CornerRadius="8" 
+                            Height="180" Margin="0,15,0,0" Visibility="Collapsed">
+                        <TextBlock Text="摄像头预览区域" Foreground="White" 
+                                   VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    </Border>
+                </StackPanel>
+            </Border>
+
+            <!-- WiFi Information -->
+            <Border Background="#F5F8FF" CornerRadius="12" Padding="15" Margin="0,0,0,15">
+                <StackPanel>
+                    <TextBlock Text="📶 WiFi 连接信息" FontSize="15" FontWeight="Medium" Foreground="#333333" Margin="0,0,0,10"/>
+
+                    <Grid x:Name="WifiInfoGrid">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="120"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0" Text="SSID:" Foreground="#64748B" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="WifiSsidText" Grid.Column="1" Text="检测中..." Foreground="#333333" VerticalAlignment="Center"/>
+
+                        <TextBlock Grid.Column="0" Grid.Row="1" Text="信号:" Foreground="#64748B" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                        <ProgressBar x:Name="WifiSignalBar" Grid.Column="1" Grid.Row="1" Height="20" Value="0" Maximum="100" 
+                                     Foreground="#3B82F6" Margin="0,8,0,0"/>
+
+                        <TextBlock x:Name="WifiSignalText" Grid.Column="1" Grid.Row="1" Text="0%" 
+                                   Foreground="#333333" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,8,0,0"/>
+
+                        <TextBlock Grid.Column="0" Grid.Row="2" Text="状态:" Foreground="#64748B" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                        <TextBlock x:Name="WifiStatusText" Grid.Column="1" Grid.Row="2" Text="检测中..." Foreground="#333333" 
+                                   VerticalAlignment="Center" Margin="0,8,0,0"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- USB Devices -->
+            <Border Background="#F5F8FF" CornerRadius="12" Padding="15" Margin="0,0,0,15">
+                <StackPanel>
+                    <TextBlock Text="🔌 USB 设备" FontSize="15" FontWeight="Medium" Foreground="#333333" Margin="0,0,0,10"/>
+
+                    <ListBox x:Name="UsbDeviceList" Height="120" Background="White" 
+                             BorderBrush="#CBD5E1" BorderThickness="1" Padding="5"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Name}" FontWeight="Medium" Foreground="#333333"/>
+                                    <TextBlock Text="{Binding Description}" FontSize="11" Foreground="#64748B"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </StackPanel>
+            </Border>
+
+            <!-- API Documentation -->
+            <Border Background="#FFF8E1" CornerRadius="12" Padding="15" Margin="0,0,0,15">
+                <StackPanel>
+                    <TextBlock Text="📖 API 使用说明" FontSize="15" FontWeight="Medium" Foreground="#E65100" Margin="0,0,0,10"/>
+
+                    <StackPanel>
+                        <TextBlock Text="获取摄像头快照:" FontSize="13" Foreground="#333333" FontWeight="Medium"/>
+                        <TextBlock Text="GET /api/camera/snapshot" FontFamily="Consolas" FontSize="12" Foreground="#6C757D"/>
+                    </StackPanel>
+
+                    <StackPanel Margin="0,8,0,0">
+                        <TextBlock Text="获取 WiFi 信息:" FontSize="13" Foreground="#333333" FontWeight="Medium"/>
+                        <TextBlock Text="GET /api/wifi" FontFamily="Consolas" FontSize="12" Foreground="#6C757D"/>
+                    </StackPanel>
+
+                    <StackPanel Margin="0,8,0,0">
+                        <TextBlock Text="获取 USB 设备:" FontSize="13" Foreground="#333333" FontWeight="Medium"/>
+                        <TextBlock Text="GET /api/devices/usb" FontFamily="Consolas" FontSize="12" Foreground="#6C757D"/>
+                    </StackPanel>
+
+                    <StackPanel Margin="0,8,0,0">
+                        <TextBlock Text="身份验证:" FontSize="13" Foreground="#333333" FontWeight="Medium"/>
+                        <TextBlock Text="使用远程桌面配置的账号密码" FontSize="12" Foreground="#6C757D"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
