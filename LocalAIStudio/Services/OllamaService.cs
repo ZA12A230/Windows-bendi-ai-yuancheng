@@ -323,7 +323,7 @@ namespace LocalAIStudio.Services
 
                 if (totalBytes > 0)
                 {
-                    var percent = (int)((double)downloadedBytes / totalBytes * 100;
+                    var percent = (int)((double)downloadedBytes / totalBytes * 100);
                     progress.Report(Math.Min(100, percent));
                     status.Report($"下载中 {percent}% ({FormatBytes(downloadedBytes)}/{FormatBytes(totalBytes)})");
                 }
