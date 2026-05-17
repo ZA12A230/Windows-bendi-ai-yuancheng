@@ -56,7 +56,6 @@
                                      Background="White"
                                      BorderBrush="#E0E8FF"
                                      BorderThickness="1"
-                                     CornerRadius="8"
                                      Foreground="#333333"/>
                             <Button x:Name="CopyUrlButton" 
                                     Grid.Column="1"
@@ -80,7 +79,6 @@
                                      Background="White"
                                      BorderBrush="#E0E8FF"
                                      BorderThickness="1"
-                                     CornerRadius="8"
                                      Foreground="#333333"
                                      FontFamily="Consolas"
                                      Text="ollama run llama2"/>

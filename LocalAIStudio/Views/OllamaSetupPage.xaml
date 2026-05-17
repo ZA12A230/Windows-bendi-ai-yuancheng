@@ -40,8 +40,6 @@
                                       Data="M 20,6 L 9,17 L 4,12"
                                       Stroke="#4CAF50"
                                       StrokeThickness="3"
-                                      StrokeLineCap="Round"
-                                      StrokeLineJoin="Round"
                                       Fill="Transparent"
                                       Visibility="Collapsed"/>
                                 <Ellipse x:Name="Spinner" 

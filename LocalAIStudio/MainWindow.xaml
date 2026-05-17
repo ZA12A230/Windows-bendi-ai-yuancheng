@@ -13,7 +13,7 @@
 
     <Window.Resources>
         <!-- 毛玻璃效果 -->
-        <DropShadowEffect x:Name="ShadowEffect" Color="#1E3A8A" BlurRadius="40" ShadowDepth="0" Opacity="0.3"/>
+        <DropShadowEffect x:Key="ShadowEffect" Color="#1E3A8A" BlurRadius="40" ShadowDepth="0" Opacity="0.3"/>
 
         <!-- 蓝色渐变 -->
         <LinearGradientBrush x:Key="BlueGradient" StartPoint="0,0" EndPoint="1,1">
