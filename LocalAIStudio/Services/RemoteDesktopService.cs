@@ -277,16 +277,16 @@ namespace LocalAIStudio.Services
             }
             finally
             {
-                _vncProcess?.Dispose();
+                _vncProcess.Dispose();
                 _vncProcess = null;
-                StatusChanged?.Invoke(this, false);
+                StatusChanged.Invoke(this, false);
             }
         }
 
-        private void VncProcessExited(object? sender, EventArgs e)
+        private void VncProcessExited(object sender, EventArgs e)
         {
-            StatusChanged?.Invoke(this, false);
-            _vncProcess?.Dispose();
+            StatusChanged.Invoke(this, false);
+            _vncProcess.Dispose();
             _vncProcess = null;
         }
 
@@ -294,7 +294,7 @@ namespace LocalAIStudio.Services
 
         #region FRP 端口转发
 
-        private FrpConfig? _frpConfigForRdp;
+        private FrpConfig _frpConfigForRdp;
 
         private async void StartFrpPortForward(int port)
         {

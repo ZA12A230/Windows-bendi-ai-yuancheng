@@ -32,38 +32,143 @@ jobs:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
     - name: Restore dependencies
-      run: dotnet restore ${{ env.PROJECT_FILE }}
+      id: restore
+      run: |
+        try {
+          dotnet restore ${{ env.PROJECT_FILE }} 2>&1 | Tee-Object -FilePath restore.log
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "::error::Restore failed with exit code $LASTEXITCODE"
+            exit $LASTEXITCODE
+          }
+        } catch {
+          Write-Host "::error::Restore exception: $_"
+          exit 1
+        }
+      continue-on-error: false
 
-    - name: Build
-      run: dotnet build ${{ env.PROJECT_FILE }} -c Release --no-restore
+    - name: Build with detailed error logging
+      id: build
+      run: |
+        try {
+          $buildOutput = dotnet build ${{ env.PROJECT_FILE }} -c Release --no-restore 2>&1
+          $buildOutput | Tee-Object -FilePath build.log
+          
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "::error::Build failed with exit code $LASTEXITCODE"
+            
+            # Analyze build errors
+            $errorPattern = '\((\d+),(\d+)\): error (\w+): (.*?)\s+\[.*?\.csproj\]'
+            $errors = $buildOutput | Select-String -Pattern $errorPattern -AllMatches
+            
+            if ($errors) {
+              foreach ($match in $errors.Matches) {
+                $file = $match.Context.PreContext[0] -replace '^\s*', '' -replace '\s*$', ''
+                $line = $match.Groups[1].Value
+                $column = $match.Groups[2].Value
+                $errorCode = $match.Groups[3].Value
+                $message = $match.Groups[4].Value
+                
+                Write-Host "::error file=${file},line=${line},col=${column}::${errorCode}: ${message}"
+                Write-Host "---"
+                Write-Host "Error in file: $file"
+                Write-Host "Location: Line $line, Column $column"
+                Write-Host "Error Code: $errorCode"
+                Write-Host "Reason: $message"
+                Write-Host "---"
+              }
+            } else {
+              # Fallback: look for any line with "error"
+              $errorLines = $buildOutput | Where-Object { $_ -match 'error' }
+              foreach ($line in $errorLines) {
+                Write-Host "::error::${line}"
+              }
+            }
+            
+            exit $LASTEXITCODE
+          }
+        } catch {
+          Write-Host "::error::Build exception: $_"
+          exit 1
+        }
+      continue-on-error: false
 
     - name: Publish Single File EXE
+      id: publish
       run: |
-        dotnet publish ${{ env.PROJECT_FILE }} `
-          -c Release `
-          -r win-x64 `
-          --self-contained true `
-          -p:PublishSingleFile=true `
-          -p:IncludeNativeLibrariesForSelfExtract=true `
-          -p:EnableCompressionInSingleFile=false `
-          -p:DebugType=None `
-          -p:DebugSymbols=false `
-          -o ./publish
+        try {
+          $publishOutput = dotnet publish ${{ env.PROJECT_FILE }} `
+            -c Release `
+            -r win-x64 `
+            --self-contained true `
+            -p:PublishSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:EnableCompressionInSingleFile=false `
+            -p:DebugType=None `
+            -p:DebugSymbols=false `
+            -o ./publish 2>&1
+          $publishOutput | Tee-Object -FilePath publish.log
+          
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "::error::Publish failed with exit code $LASTEXITCODE"
+            
+            $errorPattern = '\((\d+),(\d+)\): error (\w+): (.*?)\s+\[.*?\.csproj\]'
+            $errors = $publishOutput | Select-String -Pattern $errorPattern -AllMatches
+            
+            if ($errors) {
+              foreach ($match in $errors.Matches) {
+                $file = $match.Context.PreContext[0] -replace '^\s*', '' -replace '\s*$', ''
+                $line = $match.Groups[1].Value
+                $column = $match.Groups[2].Value
+                $errorCode = $match.Groups[3].Value
+                $message = $match.Groups[4].Value
+                
+                Write-Host "::error file=${file},line=${line},col=${column}::${errorCode}: ${message}"
+              }
+            } else {
+              $errorLines = $publishOutput | Where-Object { $_ -match 'error' }
+              foreach ($line in $errorLines) {
+                Write-Host "::error::${line}"
+              }
+            }
+            
+            exit $LASTEXITCODE
+          }
+        } catch {
+          Write-Host "::error::Publish exception: $_"
+          exit 1
+        }
+      continue-on-error: false
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: build-logs
+        path: |
+          build.log
+          publish.log
+          restore.log
 
     - name: Create Release Archive
+      if: success()
       run: |
         Compress-Archive -Path ./publish/* -DestinationPath ./${{ env.PROJECT_NAME }}-win-x64.zip -Force
         
     - name: Get Release Notes
       id: release_notes
+      if: success()
       run: |
         $commitMessage = git log -1 --pretty=%B
-        $releaseNotes = Get-Content README.md | Select-Object -First 50
+        $releaseNotes = Get-Content README.md -ErrorAction SilentlyContinue | Select-Object -First 50
+        if (-not $releaseNotes) {
+          $releaseNotes = "LocalAIStudio Release"
+        }
         $releaseNotes | Out-File -Encoding UTF8 release_notes.md
         echo "commit_message=$commitMessage" >> $env:GITHUB_OUTPUT
 
     - name: Create Release
       id: create_release
+      if: success()
       uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ github.event.inputs.version || github.ref_name }}
@@ -78,6 +183,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Upload EXE as Release Asset
+      if: success()
       uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ github.event.inputs.version || github.ref_name }}

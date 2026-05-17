@@ -19,14 +19,14 @@ namespace LocalAIStudio.Services
         public static FrpService Instance => _instance.Value;
         #endregion
 
-        private Process? _frpProcess;
+        private Process _frpProcess;
         private string _frpcPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "frpc.exe");
         private string _configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "frpc.ini");
-        private CancellationTokenSource? _monitorCts;
+        private CancellationTokenSource _monitorCts;
 
         public bool IsRunning => _frpProcess != null && !_frpProcess.HasExited;
 
-        public event EventHandler<bool>? StatusChanged;
+        public event EventHandler<bool> StatusChanged;
 
         public FrpService()
         {
@@ -183,7 +183,7 @@ namespace LocalAIStudio.Services
                     _monitorCts = new CancellationTokenSource();
                     _ = Task.Run(() => MonitorProcessAsync(_monitorCts.Token), _monitorCts.Token);
 
-                    StatusChanged?.Invoke(this, true);
+                    StatusChanged.Invoke(this, true);
                     return true;
                 }
 
@@ -203,8 +203,8 @@ namespace LocalAIStudio.Services
 
             try
             {
-                _monitorCts?.Cancel();
-                _frpProcess?.Kill();
+                _monitorCts.Cancel();
+                _frpProcess.Kill();
                 await Task.Delay(500);
             }
             catch (Exception ex)
@@ -213,15 +213,15 @@ namespace LocalAIStudio.Services
             }
             finally
             {
-                _frpProcess?.Dispose();
+                _frpProcess.Dispose();
                 _frpProcess = null;
-                StatusChanged?.Invoke(this, false);
+                StatusChanged.Invoke(this, false);
             }
         }
 
-        private void FrpProcess_Exited(object? sender, EventArgs e)
+        private void FrpProcess_Exited(object sender, EventArgs e)
         {
-            StatusChanged?.Invoke(this, false);
+            StatusChanged.Invoke(this, false);
         }
 
         private void FrpProcess_OutputDataReceived(object sender, DataReceivedEventArgs e)
@@ -247,7 +247,7 @@ namespace LocalAIStudio.Services
                 await Task.Delay(1000, cancellationToken);
                 if (_frpProcess != null && _frpProcess.HasExited)
                 {
-                    StatusChanged?.Invoke(this, false);
+                    StatusChanged.Invoke(this, false);
                     break;
                 }
             }
