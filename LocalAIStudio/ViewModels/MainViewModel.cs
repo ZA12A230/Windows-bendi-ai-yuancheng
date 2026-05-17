@@ -431,7 +431,7 @@ namespace LocalAIStudio.ViewModels
         {
             if (string.IsNullOrWhiteSpace(RemoteAddress))
             {
-                MessageBox.Show("请输入远程连接地址", "提示");
+                System.Windows.MessageBox.Show("请输入远程连接地址", "提示");
                 return;
             }
 
@@ -479,8 +479,8 @@ namespace LocalAIStudio.ViewModels
         {
             if (param is WebsiteInfo site)
             {
-                Clipboard.SetText(site.LocalUrl);
-                MessageBox.Show("链接已复制到剪贴板", "提示");
+                System.Windows.Clipboard.SetText(site.LocalUrl);
+                System.Windows.MessageBox.Show("链接已复制到剪贴板", "提示");
             }
         }
 

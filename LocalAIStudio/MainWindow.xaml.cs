@@ -328,19 +328,19 @@ namespace LocalAIStudio
         {
             var border = new Border
             {
-                Background = isUser ? (SolidColorBrush)FindResource("BlueGradient") : new SolidColorBrush(Color.FromRgb(241, 245, 249)),
+                Background = isUser ? (SolidColorBrush)FindResource("BlueGradient") : new SolidColorBrush(System.Windows.Media.Color.FromRgb(241, 245, 249)),
                 CornerRadius = new CornerRadius(12),
                 Padding = new Thickness(15),
                 Margin = new Thickness(0, 0, 0, 15),
                 MaxWidth = 600,
-                HorizontalAlignment = isUser ? HorizontalAlignment.Right : HorizontalAlignment.Left
+                HorizontalAlignment = isUser ? System.Windows.HorizontalAlignment.Right : System.Windows.HorizontalAlignment.Left
             };
 
             var textBlock = new TextBlock
             {
                 Text = text,
                 TextWrapping = TextWrapping.Wrap,
-                Foreground = isUser ? Brushes.White : new SolidColorBrush(Color.FromRgb(30, 41, 59)),
+                Foreground = isUser ? System.Windows.Media.Brushes.White : new SolidColorBrush(System.Windows.Media.Color.FromRgb(30, 41, 59)),
                 FontSize = 14
             };
 
@@ -420,7 +420,7 @@ namespace LocalAIStudio
         {
             if (sender is System.Windows.Controls.Button button && button.Tag is WebsiteInfo site)
             {
-                Clipboard.SetText(site.LocalUrl);
+                System.Windows.Clipboard.SetText(site.LocalUrl);
                 System.Windows.MessageBox.Show("链接已复制到剪贴板", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
@@ -455,7 +455,7 @@ namespace LocalAIStudio
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
-            Application.Current.Shutdown();
+            System.Windows.Application.Current.Shutdown();
         }
 
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
