@@ -31,19 +31,51 @@ namespace LocalAIStudio
 
         public MainWindow()
         {
-            InitializeComponent();
-            _viewModel = new MainViewModel();
-            DataContext = _viewModel;
+            try
+            {
+                InitializeComponent();
+                
+                // 确保窗口可见
+                ShowInTaskbar = true;
+                Visibility = Visibility.Visible;
+                WindowState = WindowState.Normal;
+                Topmost = false;
+                
+                _viewModel = new MainViewModel();
+                DataContext = _viewModel;
 
-            Loaded += MainWindow_Loaded;
-            MouseLeftButtonDown += Window_MouseLeftButtonDown;
+                Loaded += MainWindow_Loaded;
+                MouseLeftButtonDown += Window_MouseLeftButtonDown;
+                
+                System.Diagnostics.Debug.WriteLine("MainWindow 构造函数执行完成");
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"窗口初始化失败: {ex.Message}\n\n{ex.StackTrace}", 
+                    "初始化错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            InitializeData();
-            InitializeChart();
-            StartChartUpdates();
+            try
+            {
+                // 强制显示窗口
+                Show();
+                Activate();
+                Focus();
+                
+                InitializeData();
+                InitializeChart();
+                StartChartUpdates();
+                
+                System.Diagnostics.Debug.WriteLine("MainWindow 加载完成");
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"窗口加载失败: {ex.Message}\n\n{ex.StackTrace}", 
+                    "加载错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void InitializeData()
