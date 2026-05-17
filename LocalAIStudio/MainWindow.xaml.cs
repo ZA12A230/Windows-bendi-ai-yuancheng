@@ -24,7 +24,7 @@ namespace LocalAIStudio
     public partial class MainWindow : Window
     {
         private MainViewModel _viewModel;
-        private DispatcherTimer? _chartTimer;
+        private DispatcherTimer _chartTimer;
         private readonly List<double> _cpuHistory = new List<double>();
         private readonly List<double> _aiCpuHistory = new List<double>();
         private const int MaxDataPoints = 60;

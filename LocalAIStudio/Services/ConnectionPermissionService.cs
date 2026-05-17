@@ -17,14 +17,14 @@ namespace LocalAIStudio.Services
 
         private readonly ConcurrentDictionary<string, ConnectionRequest> _pendingConnections = new ConcurrentDictionary<string, ConnectionRequest>();
         private readonly ConcurrentDictionary<string, ConnectionPermission> _permissions = new ConcurrentDictionary<string, ConnectionPermission>();
-        private Timer? _cleanupTimer;
+        private Timer _cleanupTimer;
         private readonly TimeSpan _requestTimeout = TimeSpan.FromSeconds(60);
         private readonly TimeSpan _permissionDuration = TimeSpan.FromHours(24);
 
-        public event EventHandler<ConnectionRequest>? ConnectionRequested;
-        public event EventHandler<ConnectionRequest>? ConnectionApproved;
-        public event EventHandler<ConnectionRequest>? ConnectionRejected;
-        public event EventHandler<ConnectionRequest>? ConnectionTimeout;
+        public event EventHandler<ConnectionRequest> ConnectionRequested;
+        public event EventHandler<ConnectionRequest> ConnectionApproved;
+        public event EventHandler<ConnectionRequest> ConnectionRejected;
+        public event EventHandler<ConnectionRequest> ConnectionTimeout;
 
         public bool AcceptConnections { get; set; } = true;
         public bool RequireApproval { get; set; } = true;
@@ -40,7 +40,7 @@ namespace LocalAIStudio.Services
                 TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
         }
 
-        private void CleanupExpiredRequests(object? state)
+        private void CleanupExpiredRequests(object state)
         {
             var now = DateTime.Now;
             var expiredKeys = new List<string>();
