@@ -21,18 +21,18 @@ namespace LocalAIStudio.Services
 
         private readonly Dictionary<string, ProcessInfo> _monitoredProcesses = new Dictionary<string, ProcessInfo>();
         private readonly Dictionary<string, DateTime> _restartHistory = new Dictionary<string, DateTime>();
-        private CancellationTokenSource? _cts;
-        private CancellationTokenSource? _adaptiveCts;
+        private CancellationTokenSource _cts;
+        private CancellationTokenSource _adaptiveCts;
         private bool _isRunning = false;
         private bool _adaptiveModeEnabled = false;
         private int _restartCount = 0;
         private const int MaxRestartAttempts = 5;
         private const int RestartCooldownSeconds = 30;
 
-        public event EventHandler<string>? ProcessRestarted;
-        public event EventHandler<string>? ProcessCrashed;
-        public event EventHandler<(string process, string reason)>? RestartFailed;
-        public event EventHandler<PerformanceAlert>? PerformanceAlertRaised;
+        public event EventHandler<string> ProcessRestarted;
+        public event EventHandler<string> ProcessCrashed;
+        public event EventHandler<(string process, string reason)> RestartFailed;
+        public event EventHandler<PerformanceAlert> PerformanceAlertRaised;
 
         public bool IsRunning => _isRunning;
         public bool AdaptiveModeEnabled => _adaptiveModeEnabled;
@@ -40,7 +40,7 @@ namespace LocalAIStudio.Services
 
         #region Process Management
 
-        public void RegisterProcess(string processName, string exePath, string? arguments = null, bool autoRestart = true)
+        public void RegisterProcess(string processName, string exePath, string arguments = null, bool autoRestart = true)
         {
             if (_monitoredProcesses.ContainsKey(processName))
             {
@@ -86,7 +86,8 @@ namespace LocalAIStudio.Services
         {
             if (!_isRunning) return;
 
-            _cts?.Cancel();
+            if (_cts != null)
+                _cts.Cancel();
             _isRunning = false;
             Debug.WriteLine("Watchdog service stopped");
         }
@@ -134,7 +135,7 @@ namespace LocalAIStudio.Services
             }
         }
 
-        private Process? GetProcessByName(string name)
+        private Process GetProcessByName(string name)
         {
             try
             {
@@ -178,7 +179,7 @@ namespace LocalAIStudio.Services
                     processInfo.LastStartTime = DateTime.Now;
                     processInfo.ProcessId = process.Id;
 
-                    ProcessRestarted?.Invoke(this, processName);
+                    ProcessRestarted.Invoke(this, processName);
                     Debug.WriteLine($"Started process: {processName}");
                     return true;
                 }
@@ -186,7 +187,7 @@ namespace LocalAIStudio.Services
             catch (Exception ex)
             {
                 Debug.WriteLine($"Failed to start process {processName}: {ex.Message}");
-                RestartFailed?.Invoke(this, (processName, ex.Message));
+                RestartFailed.Invoke(this, (processName, ex.Message));
             }
 
             return false;
@@ -209,12 +210,12 @@ namespace LocalAIStudio.Services
             if (_restartCount >= MaxRestartAttempts)
             {
                 Debug.WriteLine($"Max restart attempts reached for {processName}");
-                RestartFailed?.Invoke(this, (processName, "Max restart attempts reached"));
+                RestartFailed.Invoke(this, (processName, "Max restart attempts reached"));
                 return false;
             }
 
             Debug.WriteLine($"Attempting to restart {processName}...");
-            ProcessCrashed?.Invoke(this, processName);
+            ProcessCrashed.Invoke(this, processName);
 
             var success = await TryStartProcess(processName);
             
@@ -253,12 +254,12 @@ namespace LocalAIStudio.Services
             }
         }
 
-        public void SetProcessRunning(string processName, bool running, int? processId = null)
+        public void SetProcessRunning(string processName, bool running, int processId = 0)
         {
             if (_monitoredProcesses.TryGetValue(processName, out var processInfo))
             {
                 processInfo.IsRunning = running;
-                processInfo.ProcessId = processId ?? 0;
+                processInfo.ProcessId = processId;
                 if (running)
                 {
                     processInfo.LastStartTime = DateTime.Now;
@@ -284,15 +285,16 @@ namespace LocalAIStudio.Services
         {
             if (!_adaptiveModeEnabled) return;
 
-            _adaptiveCts?.Cancel();
+            if (_adaptiveCts != null)
+                _adaptiveCts.Cancel();
             _adaptiveModeEnabled = false;
             Debug.WriteLine("Adaptive mode stopped");
         }
 
         private async Task AdaptiveMonitorLoop(CancellationToken ct, int systemThreshold, int aiThreshold)
         {
-            PerformanceCounter? cpuCounter = null;
-            PerformanceCounter? aiCpuCounter = null;
+            PerformanceCounter cpuCounter = null;
+            PerformanceCounter aiCpuCounter = null;
 
             try
             {
@@ -319,7 +321,7 @@ namespace LocalAIStudio.Services
 
                     if (systemUsage > systemThreshold)
                     {
-                        PerformanceAlertRaised?.Invoke(this, new PerformanceAlert
+                        PerformanceAlertRaised.Invoke(this, new PerformanceAlert
                         {
                             AlertType = AlertType.SystemHigh,
                             Usage = systemUsage,
@@ -332,7 +334,7 @@ namespace LocalAIStudio.Services
 
                     if (aiUsage > aiThreshold)
                     {
-                        PerformanceAlertRaised?.Invoke(this, new PerformanceAlert
+                        PerformanceAlertRaised.Invoke(this, new PerformanceAlert
                         {
                             AlertType = AlertType.AiProcessHigh,
                             Usage = aiUsage,
@@ -454,7 +456,7 @@ namespace LocalAIStudio.Services
             try
             {
                 using var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run", false);
-                return key?.GetValue("LocalAIStudio") != null;
+                return key.GetValue("LocalAIStudio") != null;
             }
             catch { }
             return false;
@@ -469,7 +471,7 @@ namespace LocalAIStudio.Services
 
                 if (enabled)
                 {
-                    var exePath = Process.GetCurrentProcess().MainModule?.FileName;
+                    var exePath = Process.GetCurrentProcess().MainModule.FileName;
                     if (!string.IsNullOrEmpty(exePath))
                     {
                         key.SetValue("LocalAIStudio", $"\"{exePath}\"", RegistryValueKind.String);
@@ -490,7 +492,7 @@ namespace LocalAIStudio.Services
 
         #region Update
 
-        public async Task<UpdateInfo?> CheckForUpdatesAsync(string updateUrl = "https://api.github.com/repos/yourusername/LocalAIStudio/releases/latest")
+        public async Task<UpdateInfo> CheckForUpdatesAsync(string updateUrl = "https://api.github.com/repos/yourusername/LocalAIStudio/releases/latest")
         {
             try
             {
@@ -505,19 +507,19 @@ namespace LocalAIStudio.Services
                     return null;
 
                 var currentVersion = GetCurrentVersion();
-                var latestVersion = release.TagName?.TrimStart('v') ?? "0.0.0";
+                var latestVersion = release.TagName.TrimStart('v') ?? "0.0.0";
 
                 if (CompareVersion(latestVersion, currentVersion) > 0)
                 {
-                    var asset = release.Assets?.FirstOrDefault(a => 
-                        a.Name?.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) == true);
+                    var asset = release.Assets.FirstOrDefault(a => 
+                        a.Name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) == true);
 
                     return new UpdateInfo
                     {
                         CurrentVersion = currentVersion,
                         LatestVersion = latestVersion,
                         ReleaseNotes = release.Body,
-                        DownloadUrl = asset?.BrowserDownloadUrl,
+                        DownloadUrl = asset.BrowserDownloadUrl,
                         PublishedAt = release.PublishedAt
                     };
                 }
@@ -554,7 +556,7 @@ namespace LocalAIStudio.Services
             return 0;
         }
 
-        public async Task<string?> DownloadUpdateAsync(string downloadUrl, IProgress<double>? progress = null)
+        public async Task<string> DownloadUpdateAsync(string downloadUrl, IProgress<double> progress = null)
         {
             try
             {
@@ -582,7 +584,8 @@ namespace LocalAIStudio.Services
 
                     if (totalBytes > 0)
                     {
-                        progress?.Report((double)totalBytesRead / totalBytes * 100);
+                        if (progress != null)
+                            progress.Report((double)totalBytesRead / totalBytes * 100);
                     }
                 }
 
@@ -599,7 +602,7 @@ namespace LocalAIStudio.Services
         {
             try
             {
-                var currentExe = Process.GetCurrentProcess().MainModule?.FileName;
+                var currentExe = Process.GetCurrentProcess().MainModule.FileName;
                 if (string.IsNullOrEmpty(currentExe))
                     return false;
 
@@ -645,7 +648,7 @@ del ""{batchPath}""
     {
         public string Name { get; set; } = "";
         public string ExePath { get; set; } = "";
-        public string? Arguments { get; set; }
+        public string Arguments { get; set; }
         public bool AutoRestart { get; set; }
         public bool IsRunning { get; set; }
         public int ProcessId { get; set; }
@@ -673,23 +676,23 @@ del ""{batchPath}""
     {
         public string CurrentVersion { get; set; } = "";
         public string LatestVersion { get; set; } = "";
-        public string? ReleaseNotes { get; set; }
-        public string? DownloadUrl { get; set; }
-        public DateTime? PublishedAt { get; set; }
+        public string ReleaseNotes { get; set; }
+        public string DownloadUrl { get; set; }
+        public DateTime PublishedAt { get; set; }
     }
 
     public class GitHubRelease
     {
-        public string? TagName { get; set; }
-        public string? Body { get; set; }
-        public DateTime? PublishedAt { get; set; }
-        public List<GitHubAsset>? Assets { get; set; }
+        public string TagName { get; set; }
+        public string Body { get; set; }
+        public DateTime PublishedAt { get; set; }
+        public List<GitHubAsset> Assets { get; set; }
     }
 
     public class GitHubAsset
     {
-        public string? Name { get; set; }
-        public string? BrowserDownloadUrl { get; set; }
+        public string Name { get; set; }
+        public string BrowserDownloadUrl { get; set; }
     }
 
     #endregion

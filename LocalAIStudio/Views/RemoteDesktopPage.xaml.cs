@@ -65,7 +65,7 @@ namespace LocalAIStudio.Views
             }
         }
 
-        private void RemoteDesktopService_StatusChanged(object? sender, bool isRunning)
+        private void RemoteDesktopService_StatusChanged(object sender, bool isRunning)
         {
             Dispatcher.Invoke(() =>
             {

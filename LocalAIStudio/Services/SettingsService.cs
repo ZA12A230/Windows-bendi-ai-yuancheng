@@ -15,9 +15,9 @@ namespace LocalAIStudio.Services
         public static SettingsService Instance => _instance.Value;
         #endregion
 
-        private readonly string _appPath = Process.GetCurrentProcess().MainModule?.FileName ?? string.Empty;
+        private readonly string _appPath = Process.GetCurrentProcess().MainModule.FileName ?? string.Empty;
         private readonly string _appName = Process.GetCurrentProcess().ProcessName;
-        private CancellationTokenSource? _monitoringTokenSource;
+        private CancellationTokenSource _monitoringTokenSource;
 
         public bool AutoStartEnabled
         {
@@ -240,7 +240,7 @@ namespace LocalAIStudio.Services
                     Arguments = "-devicedisablewake *",
                     UseShellExecute = false,
                     CreateNoWindow = true
-                })?.WaitForExit();
+                }).WaitForExit();
             }
             catch (Exception ex)
             {
@@ -299,8 +299,11 @@ namespace LocalAIStudio.Services
 
         private void StopMonitoring()
         {
-            _monitoringTokenSource?.Cancel();
-            _monitoringTokenSource?.Dispose();
+            if (_monitoringTokenSource != null)
+            {
+                _monitoringTokenSource.Cancel();
+                _monitoringTokenSource.Dispose();
+            }
             _monitoringTokenSource = null;
         }
 
@@ -320,7 +323,7 @@ namespace LocalAIStudio.Services
 
                     // 获取Ollama进程的CPU占用
                     float aiCpuUsage = 0;
-                    Process? aiProcess = null;
+                    Process aiProcess = null;
 
                     var processes = Process.GetProcessesByName("ollama");
                     if (processes.Length > 0)

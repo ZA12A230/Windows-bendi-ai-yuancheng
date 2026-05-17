@@ -52,7 +52,7 @@ namespace LocalAIStudio.Services
                 _httpListener.Start();
                 _isRunning = true;
                 LogAccess("API server started on port " + port);
-                ApiServerStarted?.Invoke(this, EventArgs.Empty);
+                ApiServerStarted.Invoke(this, EventArgs.Empty);
 
                 HardwareMonitorService.Instance.StartRemoteAccessMonitoring();
 

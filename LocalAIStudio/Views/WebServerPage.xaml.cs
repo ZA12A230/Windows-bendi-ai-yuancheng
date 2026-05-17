@@ -324,9 +324,9 @@ namespace LocalAIStudio.Views
         public string WebsitePath { get; private set; } = "";
         public int WebsitePort { get; private set; } = 8080;
 
-        private TextBox _nameTextBox;
-        private TextBox _portTextBox;
-        private TextBox _pathTextBox;
+        private System.Windows.Controls.TextBox _nameTextBox;
+        private System.Windows.Controls.TextBox _portTextBox;
+        private System.Windows.Controls.TextBox _pathTextBox;
 
         public AddWebsiteDialog()
         {
