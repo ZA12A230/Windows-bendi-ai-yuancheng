@@ -356,7 +356,7 @@ namespace LocalAIStudio.Views
             Grid.SetRow(_nameTextBox, 1);
             grid.Children.Add(_nameTextBox);
 
-            var pathLabel = new TextBlock { Text = "网站路径", FontSize = 14, Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(100, 116, 139)), Margin = new Thickness(0, 0, 0, 5), Grid.SetRow = 2 };
+            var pathLabel = new TextBlock { Text = "网站路径", FontSize = 14, Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(100, 116, 139)), Margin = new Thickness(0, 0, 0, 5) };
             Grid.SetRow(pathLabel, 2);
             grid.Children.Add(pathLabel);
 

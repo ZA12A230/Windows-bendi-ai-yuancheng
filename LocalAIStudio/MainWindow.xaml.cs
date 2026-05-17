@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -256,7 +257,7 @@ namespace LocalAIStudio
             try
             {
                 _chatCts = new CancellationTokenSource();
-                var models = await OllamaService.Instance.GetInstalledModelsAsync();
+                var models = await OllamaService.GetInstalledModelsAsync();
 
                 if (models.Count == 0)
                 {

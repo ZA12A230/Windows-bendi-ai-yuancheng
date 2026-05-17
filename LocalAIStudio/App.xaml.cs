@@ -26,13 +26,13 @@ namespace LocalAIStudio
         {
             System.Diagnostics.Debug.WriteLine("正在初始化服务...");
 
-            SecurityService.Instance.LoadConfig();
+            SecurityService.Instance.SaveConfig();
 
             if (SettingsService.Instance.AdaptiveModeEnabled)
             {
                 WatchdogService.Instance.StartAdaptiveMode(
-                    SettingsService.Instance.SystemThreshold,
-                    SettingsService.Instance.AiThreshold);
+                    SettingsService.Instance.SystemCpuThreshold,
+                    SettingsService.Instance.AiCpuThreshold);
                 System.Diagnostics.Debug.WriteLine("自适应模式已启动");
             }
 
