@@ -153,7 +153,7 @@ namespace LocalAIStudio.Views
         private void CopyOfficialLink_Click(object sender, RoutedEventArgs e)
         {
             System.Windows.Clipboard.SetText("https://ollama.com/download");
-            var originalButton = sender as Button;
+            var originalButton = sender as System.Windows.Controls.Button;
             if (originalButton != null)
             {
                 var originalContent = originalButton.Content;
@@ -168,7 +168,7 @@ namespace LocalAIStudio.Views
         private void CopyAliyunLink_Click(object sender, RoutedEventArgs e)
         {
             System.Windows.Clipboard.SetText("https://mirrors.aliyun.com/ollama/windows");
-            var originalButton = sender as Button;
+            var originalButton = sender as System.Windows.Controls.Button;
             if (originalButton != null)
             {
                 var originalContent = originalButton.Content;

@@ -76,7 +76,7 @@ namespace LocalAIStudio.Views
             var modelName = ParseModelName(modelText);
             if (string.IsNullOrEmpty(modelName))
             {
-                MessageBox.Show("请输入有效的模型名称", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show("请输入有效的模型名称", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -144,7 +144,7 @@ namespace LocalAIStudio.Views
 
         private void ModelCheckBox_Changed(object sender, RoutedEventArgs e)
         {
-            if (sender is CheckBox checkBox && checkBox.DataContext is Services.ModelInfo model)
+            if (sender is System.Windows.Controls.CheckBox checkBox && checkBox.DataContext is Services.ModelInfo model)
             {
                 if (checkBox.IsChecked == true)
                 {

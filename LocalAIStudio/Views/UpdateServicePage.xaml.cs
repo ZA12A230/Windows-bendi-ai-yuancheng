@@ -165,13 +165,13 @@ namespace LocalAIStudio.Views
                 {
                     UpdateAvailableBorder.Visibility = Visibility.Collapsed;
                     UpdateStatusText.Text = "当前已是最新版本";
-                    MessageBox.Show("当前已是最新版本", "检查更新", MessageBoxButton.OK, MessageBoxImage.Information);
+                    System.Windows.MessageBox.Show("当前已是最新版本", "检查更新", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
             catch (Exception ex)
             {
                 UpdateStatusText.Text = $"检查更新失败: {ex.Message}";
-                MessageBox.Show($"检查更新失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"检查更新失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -183,7 +183,7 @@ namespace LocalAIStudio.Views
                 
                 if (updateInfo == null || string.IsNullOrEmpty(updateInfo.DownloadUrl))
                 {
-                    MessageBox.Show("无法获取更新链接", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    System.Windows.MessageBox.Show("无法获取更新链接", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
 
@@ -203,7 +203,7 @@ namespace LocalAIStudio.Views
                 {
                     UpdateStatusText.Text = "下载完成，正在安装更新...";
                     
-                    var result = MessageBox.Show(
+                    var result = System.Windows.MessageBox.Show(
                         "更新已下载完成。是否立即重启并安装更新？\n\n注意：安装过程中程序将短暂退出。",
                         "安装更新",
                         MessageBoxButton.YesNo,
@@ -222,7 +222,7 @@ namespace LocalAIStudio.Views
             catch (Exception ex)
             {
                 UpdateStatusText.Text = $"下载失败: {ex.Message}";
-                MessageBox.Show($"下载失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"下载失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {

@@ -36,7 +36,7 @@ namespace LocalAIStudio.Services
 
         private void StartCleanupTimer()
         {
-            _cleanupTimer = new Timer(CleanupExpiredRequests, null, 
+            _cleanupTimer = new System.Threading.Timer(CleanupExpiredRequests, null, 
                 TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
         }
 
