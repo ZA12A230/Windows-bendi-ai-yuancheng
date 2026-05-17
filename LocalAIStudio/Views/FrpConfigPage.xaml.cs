@@ -210,7 +210,7 @@ namespace LocalAIStudio.Views
 
             UpdateConfigFromUi();
             FrpService.Instance.SaveConfig(_config);
-            MessageBox.Show("配置保存成功！", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            System.Windows.MessageBox.Show("配置保存成功！", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private async void StartStopButton_Click(object sender, RoutedEventArgs e)
@@ -240,16 +240,16 @@ namespace LocalAIStudio.Views
                     bool success = await FrpService.Instance.StartAsync(_config);
                     if (success)
                     {
-                        MessageBox.Show("内网穿透服务启动成功！", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                        System.Windows.MessageBox.Show("内网穿透服务启动成功！", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                     else
                     {
-                        MessageBox.Show("启动失败，请检查 frpc.exe 是否存在", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                        System.Windows.MessageBox.Show("启动失败，请检查 frpc.exe 是否存在", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"启动失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    System.Windows.MessageBox.Show($"启动失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
                 finally
                 {

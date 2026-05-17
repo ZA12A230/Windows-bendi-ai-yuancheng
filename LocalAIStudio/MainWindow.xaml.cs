@@ -132,14 +132,14 @@ namespace LocalAIStudio
             var cpuPoints = new PointCollection();
             var aiPoints = new PointCollection();
 
-            for (int i = 0; i < _cpuHistory.Count; i++)
+            for (int i = 0; i &lt; _cpuHistory.Count; i++)
             {
                 var x = (double)i / MaxDataPoints * canvasWidth;
                 var cpuY = canvasHeight - (_cpuHistory[i] / 100 * canvasHeight);
                 var aiY = canvasHeight - (_aiCpuHistory[i] / 100 * canvasHeight);
 
-                cpuPoints.Add(new Point(x, cpuY));
-                aiPoints.Add(new Point(x, aiY));
+                cpuPoints.Add(new System.Windows.Point(x, cpuY));
+                aiPoints.Add(new System.Windows.Point(x, aiY));
             }
 
             CpuLine.Points = cpuPoints;
@@ -183,7 +183,7 @@ namespace LocalAIStudio
 
         private void NavButton_Checked(object sender, RoutedEventArgs e)
         {
-            if (sender is RadioButton radioButton && radioButton.Tag is string pageName)
+            if (sender is System.Windows.Controls.RadioButton radioButton &amp;&amp; radioButton.Tag is string pageName)
             {
                 NavigateToPage(pageName);
             }
@@ -367,7 +367,7 @@ namespace LocalAIStudio
             var address = RemoteAddressInput.Text;
             if (string.IsNullOrWhiteSpace(address))
             {
-                MessageBox.Show("请输入远程连接地址", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                System.Windows.MessageBox.Show("请输入远程连接地址", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
@@ -418,16 +418,16 @@ namespace LocalAIStudio
 
         private void CopyWebsiteLink_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button button && button.Tag is WebsiteInfo site)
+            if (sender is System.Windows.Controls.Button button &amp;&amp; button.Tag is WebsiteInfo site)
             {
                 Clipboard.SetText(site.LocalUrl);
-                MessageBox.Show("链接已复制到剪贴板", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                System.Windows.MessageBox.Show("链接已复制到剪贴板", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
         private async void OpenWebsite_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button button && button.Tag is WebsiteInfo site)
+            if (sender is System.Windows.Controls.Button button &amp;&amp; button.Tag is WebsiteInfo site)
             {
                 if (!site.IsRunning)
                 {
