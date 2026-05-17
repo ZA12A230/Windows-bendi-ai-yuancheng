@@ -56,7 +56,7 @@ namespace LocalAIStudio.Views
 
         private void RegisterDefaultProcesses()
         {
-            var ollamaPath = OllamaService.Instance.GetOllamaPath();
+            var ollamaPath = OllamaService.GetOllamaPath();
             if (!string.IsNullOrEmpty(ollamaPath))
             {
                 WatchdogService.Instance.RegisterProcess("ollama", ollamaPath);

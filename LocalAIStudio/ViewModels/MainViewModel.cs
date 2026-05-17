@@ -351,7 +351,7 @@ namespace LocalAIStudio.ViewModels
             try
             {
                 _chatCts = new CancellationTokenSource();
-                var models = await OllamaService.Instance.GetInstalledModelsAsync();
+                var models = await OllamaService.GetInstalledModelsAsync();
 
                 if (models.Count == 0)
                 {

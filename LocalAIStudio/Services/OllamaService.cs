@@ -31,6 +31,7 @@ namespace LocalAIStudio.Services
     public class OllamaService
     {
         private const string OfficialDownloadUrl = "https://ollama.com/download";
+        private const string AliyunMirrorUrl = "https://registry.ollama.ai";
         private const string DefaultInstallPath = @"C:\Program Files\Ollama\ollama.exe";
         private const string RegistryPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\ollama.exe";
         private const string ConfigFileName = "config.json";
