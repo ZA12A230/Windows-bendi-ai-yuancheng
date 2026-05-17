@@ -10,9 +10,9 @@ namespace LocalAIStudio.Models
         public string RootPath { get; set; } = "";
         public int Port { get; set; } = 8080;
         public bool IsRunning { get; set; } = false;
-        public string CustomDomain { get; set; }
+        public string CustomDomain { get; set; } = "";
         public DateTime CreatedTime { get; set; } = DateTime.Now;
-        public DateTime LastAccessTime { get; set; }
+        public DateTime LastAccessTime { get; set; } = DateTime.Now;
         public int AccessCount { get; set; } = 0;
 
         public string LocalUrl => $"http://localhost:{Port}";

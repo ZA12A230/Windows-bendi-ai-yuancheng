@@ -648,7 +648,7 @@ del ""{batchPath}""
     {
         public string Name { get; set; } = "";
         public string ExePath { get; set; } = "";
-        public string Arguments { get; set; }
+        public string Arguments { get; set; } = "";
         public bool AutoRestart { get; set; }
         public bool IsRunning { get; set; }
         public int ProcessId { get; set; }
@@ -676,23 +676,23 @@ del ""{batchPath}""
     {
         public string CurrentVersion { get; set; } = "";
         public string LatestVersion { get; set; } = "";
-        public string ReleaseNotes { get; set; }
-        public string DownloadUrl { get; set; }
+        public string ReleaseNotes { get; set; } = "";
+        public string DownloadUrl { get; set; } = "";
         public DateTime PublishedAt { get; set; }
     }
 
     public class GitHubRelease
     {
-        public string TagName { get; set; }
-        public string Body { get; set; }
+        public string TagName { get; set; } = "";
+        public string Body { get; set; } = "";
         public DateTime PublishedAt { get; set; }
-        public List<GitHubAsset> Assets { get; set; }
+        public List<GitHubAsset> Assets { get; set; } = new List<GitHubAsset>();
     }
 
     public class GitHubAsset
     {
-        public string Name { get; set; }
-        public string BrowserDownloadUrl { get; set; }
+        public string Name { get; set; } = "";
+        public string BrowserDownloadUrl { get; set; } = "";
     }
 
     #endregion
