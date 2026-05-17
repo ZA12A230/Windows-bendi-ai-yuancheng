@@ -228,7 +228,7 @@ namespace LocalAIStudio
 
         #region Chat
 
-        private CancellationTokenSource? _chatCts;
+        private CancellationTokenSource _chatCts;
 
         private async void SendChat_Click(object sender, RoutedEventArgs e)
         {
@@ -355,7 +355,7 @@ namespace LocalAIStudio
 
         private class OllamaStreamResponse
         {
-            public string? response { get; set; }
+            public string response { get; set; }
             public bool done { get; set; }
         }
 

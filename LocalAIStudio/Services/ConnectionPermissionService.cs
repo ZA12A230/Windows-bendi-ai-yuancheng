@@ -136,7 +136,7 @@ namespace LocalAIStudio.Services
             return true;
         }
 
-        public bool RejectConnection(string requestId, string? reason = null)
+        public bool RejectConnection(string requestId, string reason = null)
         {
             if (!_pendingConnections.TryGetValue(requestId, out var request))
             {
@@ -152,7 +152,7 @@ namespace LocalAIStudio.Services
             return true;
         }
 
-        public bool ValidatePermission(string clientId, ConnectionType type, string? clientIp = null)
+        public bool ValidatePermission(string clientId, ConnectionType type, string clientIp = null)
         {
             var key = $"{clientId}:{type}";
             if (!_permissions.TryGetValue(key, out var permission))

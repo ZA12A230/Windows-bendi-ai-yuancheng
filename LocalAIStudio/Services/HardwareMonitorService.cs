@@ -42,21 +42,21 @@ namespace LocalAIStudio.Services
         private IntPtr _captureWindow = IntPtr.Zero;
         private bool _cameraActive = false;
         private bool _isMonitoring = false;
-        private Thread? _captureThread;
-        private byte[]? _lastFrame;
+        private Thread _captureThread;
+        private byte[] _lastFrame;
         private DateTime _lastFrameTime;
         
-        private WaveOutEvent? _waveOut;
-        private WaveFileReader? _waveReader;
-        private BufferedWaveProvider? _bufferedWaveProvider;
+        private WaveOutEvent _waveOut;
+        private WaveFileReader _waveReader;
+        private BufferedWaveProvider _bufferedWaveProvider;
         private bool _intercomActive = false;
 
-        public event EventHandler<bool>? CameraStateChanged;
-        public event EventHandler<bool>? MicrophoneActiveChanged;
-        public event EventHandler<bool>? IntercomStateChanged;
-        public event EventHandler? RemoteAccessStarted;
-        public event EventHandler? RemoteAccessStopped;
-        public event EventHandler<byte[]>? AudioDataReceived;
+        public event EventHandler<bool> CameraStateChanged;
+        public event EventHandler<bool> MicrophoneActiveChanged;
+        public event EventHandler<bool> IntercomStateChanged;
+        public event EventHandler RemoteAccessStarted;
+        public event EventHandler RemoteAccessStopped;
+        public event EventHandler<byte[]> AudioDataReceived;
 
         public bool IsCameraActive => _cameraActive;
         public bool IsRemoteAccessActive => _isMonitoring;

@@ -201,9 +201,9 @@ namespace LocalAIStudio.Views
             WebsiteNameText.Text = _selectedWebsite.Name;
             WebsitePortText.Text = _selectedWebsite.Port.ToString();
             WebsitePathText.Text = _selectedWebsite.RootPath;
-            CustomDomainText.Text = _selectedWebsite.CustomDomain ?? "";
+            CustomDomainText.Text = _selectedWebsite.CustomDomain;
             AccessCountText.Text = _selectedWebsite.AccessCount.ToString();
-            LastAccessText.Text = _selectedWebsite.LastAccessTime?.ToString("yyyy-MM-dd HH:mm:ss") ?? "-";
+            LastAccessText.Text = _selectedWebsite.LastAccessTime.ToString("yyyy-MM-dd HH:mm:ss");
             _isUpdatingUI = false;
         }
 
