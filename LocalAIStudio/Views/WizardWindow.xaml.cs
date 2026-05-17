@@ -686,7 +686,7 @@ namespace LocalAIStudio.Views
 
             // 账号信息
             key.SetValue("Username", UsernameText.Text);
-            key.SetValue("Password", SecurityService.Encrypt(PasswordBox.Password));
+            key.SetValue("Password", PasswordBox.Password);
 
             // 本地 IP
             key.SetValue("LocalIPv4", LocalIPv4Text.Text);
