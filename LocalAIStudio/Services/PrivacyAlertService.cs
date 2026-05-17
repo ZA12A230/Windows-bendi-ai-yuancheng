@@ -189,7 +189,7 @@ namespace LocalAIStudio.Services
                         g.FillEllipse(brush, 2, 2, 28, 28);
                     }
 
-                    g.DrawString("✓", new Font("Arial", 16, FontStyle.Bold), 
+                    g.DrawString("✓", new Font(System.Drawing.FontFamily.GenericSansSerif, 16, System.Drawing.FontStyle.Bold), 
                                 Brushes.White, 6, 4);
                 }
 
@@ -284,11 +284,11 @@ namespace LocalAIStudio.Services
                     await StopAllServices();
                     Application.Current?.Dispatcher.Invoke(() =>
                     {
-                        MessageBox.Show(
+                        System.Windows.MessageBox.Show(
                             "已强制断开所有远程连接。\n\n如果问题持续存在，请检查网络连接。",
                             "已断开连接",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Information);
+                            System.Windows.MessageBoxButton.OK,
+                            System.Windows.MessageBoxImage.Information);
                     });
                 });
             });
@@ -318,7 +318,7 @@ namespace LocalAIStudio.Services
                         $"远程访问: {((_isRemoteAccessActive ? "⚠️ 已连接" : "✅ 未连接"))}\n\n" +
                         $"点击\"强制断开连接\"可立即终止所有远程访问。";
 
-            MessageBox.Show(status, "状态信息", MessageBoxButton.OK, MessageBoxImage.Information);
+            System.Windows.MessageBox.Show(status, "状态信息", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
         }
 
         private void ShowMainWindow()

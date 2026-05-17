@@ -498,9 +498,10 @@ namespace LocalAIStudio.Services
         {
             try
             {
+                using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                cts.CancelAfter(TimeSpan.FromSeconds(5));
                 using var request = new HttpRequestMessage(HttpMethod.Head, url);
-                request.Timeout = TimeSpan.FromSeconds(5);
-                using var response = await _httpClient.SendAsync(request, cancellationToken);
+                using var response = await _httpClient.SendAsync(request, cts.Token);
                 return response.IsSuccessStatusCode;
             }
             catch

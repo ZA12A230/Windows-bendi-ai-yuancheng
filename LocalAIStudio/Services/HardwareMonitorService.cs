@@ -281,7 +281,7 @@ namespace LocalAIStudio.Services
             catch (Exception ex)
             {
                 Debug.WriteLine($"Play WAV audio error: {ex.Message}");
-                await PlayMp3OrOther(audioData);
+                await PlayMp3OrOther(wavData);
             }
         }
 

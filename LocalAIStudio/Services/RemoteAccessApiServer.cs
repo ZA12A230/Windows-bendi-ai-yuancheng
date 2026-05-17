@@ -276,7 +276,7 @@ namespace LocalAIStudio.Services
                 var boundary = Encoding.UTF8.GetBytes("\r\n--frame\r\n");
                 var contentTypeHeader = Encoding.UTF8.GetBytes("Content-Type: image/jpeg\r\n\r\n");
 
-                while (response.IsClientConnected && IsRunning)
+                while (IsRunning)
                 {
                     var frame = HardwareMonitorService.Instance.CaptureFrame();
                     if (frame != null)
