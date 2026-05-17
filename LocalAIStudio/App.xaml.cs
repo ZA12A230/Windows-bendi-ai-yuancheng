@@ -14,14 +14,18 @@ namespace LocalAIStudio
 
             try
             {
-                // 先显示主窗口，确保用户能看到程序
-                ShowMainWindowFirst();
-                
-                InitializeServices();
-                
-                // 延迟检查静默启动，确保 MainWindow 已完全初始化
-                Dispatcher.BeginInvoke(new Action(CheckSilentStart), 
-                    System.Windows.Threading.DispatcherPriority.Loaded);
+                if (IsFirstTimeStartup())
+                {
+                    ShowWizard();
+                }
+                else
+                {
+                    ShowMainWindowFirst();
+                    InitializeServices();
+                    
+                    Dispatcher.BeginInvoke(new Action(CheckSilentStart), 
+                        System.Windows.Threading.DispatcherPriority.Loaded);
+                }
             }
             catch (Exception ex)
             {
@@ -29,6 +33,36 @@ namespace LocalAIStudio
                     "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 Environment.Exit(1);
             }
+        }
+
+        private bool IsFirstTimeStartup()
+        {
+            try
+            {
+                using var key = Registry.CurrentUser.OpenSubKey(@"Software\LocalAIStudio\Settings", false);
+                if (key != null)
+                {
+                    var wizardCompleted = key.GetValue("WizardCompleted", 0);
+                    return Convert.ToInt32(wizardCompleted) != 1;
+                }
+                return true;
+            }
+            catch
+            {
+                return true;
+            }
+        }
+
+        private void ShowWizard()
+        {
+            System.Diagnostics.Debug.WriteLine("首次启动，显示设置向导...");
+            
+            var wizard = new Views.WizardWindow();
+            wizard.Show();
+            MainWindow = wizard;
+            _mainWindowShown = true;
+            
+            System.Diagnostics.Debug.WriteLine("向导已显示");
         }
 
         private void ShowMainWindowFirst()
@@ -70,7 +104,6 @@ namespace LocalAIStudio
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"服务初始化警告: {ex.Message}");
-                // 服务初始化失败不应阻止窗口显示
             }
         }
 
@@ -78,7 +111,6 @@ namespace LocalAIStudio
         {
             try
             {
-                // 默认不启用静默启动，确保窗口能正常显示
                 bool shouldStartSilently = false;
                 try
                 {
@@ -95,7 +127,6 @@ namespace LocalAIStudio
 
                     if (MainWindow != null && _mainWindowShown)
                     {
-                        // 确认用户要静默启动再隐藏
                         var result = System.Windows.MessageBox.Show(
                             "检测到静默启动设置。是否要隐藏窗口？\n\n选择'否'将保持窗口可见。",
                             "启动选项",
