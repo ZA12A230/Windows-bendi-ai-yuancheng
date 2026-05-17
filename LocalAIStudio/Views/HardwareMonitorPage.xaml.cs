@@ -8,7 +8,7 @@ using LocalAIStudio.Services;
 
 namespace LocalAIStudio.Views
 {
-    public partial class HardwareMonitorPage : UserControl
+    public partial class HardwareMonitorPage : System.Windows.Controls.UserControl
     {
         private DispatcherTimer _refreshTimer;
         private bool _cameraEnabled = false;

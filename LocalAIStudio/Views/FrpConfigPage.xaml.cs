@@ -7,7 +7,7 @@ using LocalAIStudio.Services;
 
 namespace LocalAIStudio.Views
 {
-    public partial class FrpConfigPage : UserControl
+    public partial class FrpConfigPage : System.Windows.Controls.UserControl
     {
         private FrpConfig _config = new FrpConfig();
         private bool _isStarting = false;
@@ -46,7 +46,7 @@ namespace LocalAIStudio.Views
             UpdateSubdomainVisibility();
         }
 
-        private void FrpService_StatusChanged(object? sender, bool isRunning)
+        private void FrpService_StatusChanged(object sender, bool isRunning)
         {
             Dispatcher.Invoke(() =>
             {

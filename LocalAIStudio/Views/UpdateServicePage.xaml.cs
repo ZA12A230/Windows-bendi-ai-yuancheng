@@ -10,7 +10,7 @@ using LocalAIStudio.Services;
 
 namespace LocalAIStudio.Views
 {
-    public partial class UpdateServicePage : UserControl
+    public partial class UpdateServicePage : System.Windows.Controls.UserControl
     {
         private ObservableCollection<ProcessInfo> _monitoredProcesses = new ObservableCollection<ProcessInfo>();
         private string _pendingUpdatePath;

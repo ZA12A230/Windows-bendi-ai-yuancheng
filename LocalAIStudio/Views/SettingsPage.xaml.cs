@@ -4,7 +4,7 @@ using LocalAIStudio.Services;
 
 namespace LocalAIStudio.Views
 {
-    public partial class SettingsPage : UserControl
+    public partial class SettingsPage : System.Windows.Controls.UserControl
     {
         public SettingsPage()
         {

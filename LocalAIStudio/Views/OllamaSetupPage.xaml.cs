@@ -9,7 +9,7 @@ using LocalAIStudio.Services;
 
 namespace LocalAIStudio.Views
 {
-    public partial class OllamaSetupPage : UserControl
+    public partial class OllamaSetupPage : System.Windows.Controls.UserControl
     {
         public event EventHandler SetupCompleted;
         private CancellationTokenSource _cancellationTokenSource;

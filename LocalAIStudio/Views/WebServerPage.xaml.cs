@@ -12,7 +12,7 @@ using Microsoft.Win32;
 
 namespace LocalAIStudio.Views
 {
-    public partial class WebServerPage : UserControl
+    public partial class WebServerPage : System.Windows.Controls.UserControl
     {
         private ObservableCollection<WebsiteInfo> _websites = new ObservableCollection<WebsiteInfo>();
         private WebsiteInfo _selectedWebsite;

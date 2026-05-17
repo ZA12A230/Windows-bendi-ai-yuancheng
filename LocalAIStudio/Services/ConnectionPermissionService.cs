@@ -17,7 +17,7 @@ namespace LocalAIStudio.Services
 
         private readonly ConcurrentDictionary<string, ConnectionRequest> _pendingConnections = new ConcurrentDictionary<string, ConnectionRequest>();
         private readonly ConcurrentDictionary<string, ConnectionPermission> _permissions = new ConcurrentDictionary<string, ConnectionPermission>();
-        private Timer _cleanupTimer;
+        private System.Threading.Timer _cleanupTimer;
         private readonly TimeSpan _requestTimeout = TimeSpan.FromSeconds(60);
         private readonly TimeSpan _permissionDuration = TimeSpan.FromHours(24);
 

@@ -6,7 +6,7 @@ using LocalAIStudio.Services;
 
 namespace LocalAIStudio.Views
 {
-    public partial class RemoteDesktopPage : UserControl
+    public partial class RemoteDesktopPage : System.Windows.Controls.UserControl
     {
         private RemoteDesktopConfig _config = new RemoteDesktopConfig();
         private bool _isStarting = false;

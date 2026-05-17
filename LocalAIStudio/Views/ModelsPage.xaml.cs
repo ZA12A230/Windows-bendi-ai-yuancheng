@@ -11,7 +11,7 @@ using LocalAIStudio.Services;
 
 namespace LocalAIStudio.Views
 {
-    public partial class ModelsPage : UserControl
+    public partial class ModelsPage : System.Windows.Controls.UserControl
     {
         public ObservableCollection<Services.ModelInfo> Models { get; set; }
         public HashSet<string> SelectedModels { get; private set; }
