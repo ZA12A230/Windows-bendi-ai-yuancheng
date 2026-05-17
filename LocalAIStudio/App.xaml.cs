@@ -26,8 +26,6 @@ namespace LocalAIStudio
         {
             System.Diagnostics.Debug.WriteLine("正在初始化服务...");
 
-            SecurityService.Instance.SaveConfig();
-
             if (SettingsService.Instance.AdaptiveModeEnabled)
             {
                 WatchdogService.Instance.StartAdaptiveMode(
