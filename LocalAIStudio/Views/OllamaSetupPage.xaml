@@ -36,16 +36,18 @@
                             <Viewbox Width="24" Height="24" 
                                      HorizontalAlignment="Center"
                                      VerticalAlignment="Center">
-                                <Path x:Name="CheckIcon" 
-                                      Data="M 20,6 L 9,17 L 4,12"
-                                      Stroke="#4CAF50"
-                                      StrokeThickness="3"
-                                      Fill="Transparent"
-                                      Visibility="Collapsed"/>
-                                <Ellipse x:Name="Spinner" 
-                                         Fill="Transparent"
-                                         Stroke="#CCCCCC"
-                                         StrokeThickness="2"/>
+                                <Grid>
+                                    <Path x:Name="CheckIcon" 
+                                          Data="M 20,6 L 9,17 L 4,12"
+                                          Stroke="#4CAF50"
+                                          StrokeThickness="3"
+                                          Fill="Transparent"
+                                          Visibility="Collapsed"/>
+                                    <Ellipse x:Name="Spinner" 
+                                             Fill="Transparent"
+                                             Stroke="#CCCCCC"
+                                             StrokeThickness="2"/>
+                                </Grid>
                             </Viewbox>
                         </Border>
 

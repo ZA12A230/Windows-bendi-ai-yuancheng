@@ -207,7 +207,7 @@
                             <TextBlock Text="Local AI" FontSize="24" FontWeight="Bold" 
                                        Foreground="{StaticResource BlueGradient}"/>
                             <TextBlock Text="STUDIO" FontSize="12" FontWeight="Bold" 
-                                       Foreground="#94A3B8" Margin="0,-5,0,0" LetterSpacing="4"/>
+                                       Foreground="#94A3B8" Margin="0,-5,0,0"/>
                         </StackPanel>
 
                         <!-- 导航菜单 -->

@@ -152,8 +152,6 @@
                                                               Data="M 7,12 L 11,16 L 18,9"
                                                               Stroke="White"
                                                               StrokeThickness="2"
-                                                              StrokeLineCap="Round"
-                                                              StrokeLineJoin="Round"
                                                               Visibility="Collapsed"/>
                                                     </Border>
                                                     <ControlTemplate.Triggers>
