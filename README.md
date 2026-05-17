@@ -12,12 +12,17 @@ Local AI Studio 是一款功能强大的 Windows 本地 AI 工作室应用程序
 
 您可以通过以下方式获取最新构建的可执行文件：
 
+**📖 详细下载指南请查看：[DOWNLOAD_GUIDE.md](./DOWNLOAD_GUIDE.md)**
+
 **方式一：从 GitHub Actions 下载（推荐）**
 
 1. 访问项目的 [Actions 页面](https://github.com/ZA12A230/Windows-bendi-ai-yuancheng/actions)
 2. 点击最新的成功构建（绿色勾选标记）
 3. 在 "Artifacts" 部分找到 `LocalAIStudio-EXE`
 4. 点击下载即可获取包含 EXE 和压缩包的 ZIP 文件
+5. 解压后获得 `LocalAIStudio.exe` 即可直接运行
+
+**注意：** `build` 文件夹只是占位目录，实际的 EXE 文件请从 GitHub Actions 下载！
 
 **方式二：手动构建**
 
