@@ -141,7 +141,7 @@ namespace LocalAIStudio.Views
 
         private async void ToggleWebsite_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is System.Windows.Controls.Button button &amp;&amp; button.Tag is string websiteId)
+            if (sender is System.Windows.Controls.Button button && button.Tag is string websiteId)
             {
                 var website = WebServerService.Instance.GetWebsite(websiteId);
                 if (website != null)
@@ -165,7 +165,7 @@ namespace LocalAIStudio.Views
 
         private void DeleteWebsite_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is System.Windows.Controls.Button button &amp;&amp; button.Tag is string websiteId)
+            if (sender is System.Windows.Controls.Button button && button.Tag is string websiteId)
             {
                 var website = WebServerService.Instance.GetWebsite(websiteId);
                 if (website != null)
