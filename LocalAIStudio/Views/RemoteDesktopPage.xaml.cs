@@ -210,7 +210,7 @@ namespace LocalAIStudio.Views
                 return;
 
             SaveConfig();
-            MessageBox.Show("配置保存成功！", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            System.Windows.MessageBox.Show("配置保存成功！", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private async void StartStopButton_Click(object sender, RoutedEventArgs e)
@@ -241,16 +241,16 @@ namespace LocalAIStudio.Views
 
                     if (success)
                     {
-                        MessageBox.Show("远程桌面服务启动成功！", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                        System.Windows.MessageBox.Show("远程桌面服务启动成功！", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                     else
                     {
-                        MessageBox.Show("启动失败，请检查配置。", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                        System.Windows.MessageBox.Show("启动失败，请检查配置。", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"启动失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    System.Windows.MessageBox.Show($"启动失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
                 finally
                 {
@@ -268,7 +268,7 @@ namespace LocalAIStudio.Views
                 _config.EnableFrpForward,
                 CustomDomainTextBox.Text);
 
-            MessageBox.Show(guide, "连接指南", MessageBoxButton.OK, MessageBoxImage.Information);
+            System.Windows.MessageBox.Show(guide, "连接指南", MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }
 }
