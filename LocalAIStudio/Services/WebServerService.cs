@@ -251,7 +251,7 @@ namespace LocalAIStudio.Services
             {
                 var parentPath = urlPath.TrimEnd('/');
                 var lastSlash = parentPath.LastIndexOf('/');
-                sb.AppendLine($"<li><a href='{lastSlash > 0 ? parentPath.Substring(0, lastSlash) : "/" }'>..</a></li>");
+                sb.AppendLine($"<li><a href='{(lastSlash > 0 ? parentPath.Substring(0, lastSlash) : "/") }'>..</a></li>");
             }
 
             foreach (var dir in Directory.GetDirectories(dirPath).OrderBy(d => d))

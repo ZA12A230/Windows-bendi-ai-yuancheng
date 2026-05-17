@@ -313,9 +313,9 @@ namespace LocalAIStudio.Services
         public void ShowStatus()
         {
             var status = $"📊 Local AI Studio 状态\n\n" +
-                        $"摄像头: {(_isCameraActive ? "🔴 正在访问" : "✅ 未使用")}\n" +
-                        $"麦克风: {(_isMicrophoneActive ? "🔴 正在访问" : "✅ 未使用")}\n" +
-                        $"远程访问: {(_isRemoteAccessActive ? "⚠️ 已连接" : "✅ 未连接")}\n\n" +
+                        $"摄像头: {((_isCameraActive ? "🔴 正在访问" : "✅ 未使用"))}\n" +
+                        $"麦克风: {((_isMicrophoneActive ? "🔴 正在访问" : "✅ 未使用"))}\n" +
+                        $"远程访问: {((_isRemoteAccessActive ? "⚠️ 已连接" : "✅ 未连接"))}\n\n" +
                         $"点击\"强制断开连接\"可立即终止所有远程访问。";
 
             MessageBox.Show(status, "状态信息", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -358,13 +358,13 @@ namespace LocalAIStudio.Services
         private void OnCameraStateChanged(object? sender, bool active)
         {
             IsCameraActive = active;
-            LogMessage?.Invoke(this, $"摄像头状态变更: {(active ? "启用" : "禁用")}");
+            LogMessage?.Invoke(this, $"摄像头状态变更: {((active ? "启用" : "禁用"))}");
         }
 
         private void OnMicrophoneStateChanged(object? sender, bool active)
         {
             IsMicrophoneActive = active;
-            LogMessage?.Invoke(this, $"麦克风状态变更: {(active ? "启用" : "禁用")}");
+            LogMessage?.Invoke(this, $"麦克风状态变更: {((active ? "启用" : "禁用"))}");
         }
 
         private void OnRemoteAccessStarted(object? sender, EventArgs e)
