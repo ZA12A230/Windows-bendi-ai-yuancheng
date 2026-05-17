@@ -16,15 +16,15 @@ namespace LocalAIStudio.Services
         public static PrivacyAlertService Instance => _instance.Value;
         #endregion
 
-        private NotifyIcon? _notifyIcon;
-        private ContextMenuStrip? _contextMenu;
+        private NotifyIcon _notifyIcon;
+        private ContextMenuStrip _contextMenu;
         private bool _isMonitoring = false;
         private bool _isCameraActive = false;
         private bool _isMicrophoneActive = false;
         private bool _isRemoteAccessActive = false;
 
-        public event EventHandler? DisconnectRequested;
-        public event EventHandler<string>? LogMessage;
+        public event EventHandler DisconnectRequested;
+        public event EventHandler<string> LogMessage;
 
         public bool IsCameraActive
         {
@@ -205,7 +205,7 @@ namespace LocalAIStudio.Services
         {
             if (_notifyIcon == null) return;
 
-            Application.Current?.Dispatcher.Invoke(() =>
+            Application.Current.Dispatcher.Invoke(() =>
             {
                 try
                 {
@@ -245,22 +245,22 @@ namespace LocalAIStudio.Services
         {
             try
             {
-                _notifyIcon?.ShowBalloonTip(3000, title, message, icon);
+                _notifyIcon.ShowBalloonTip(3000, title, message, icon);
             }
             catch { }
         }
 
         public void ShowAlert(string title, string message)
         {
-            Application.Current?.Dispatcher.Invoke(() =>
+            Application.Current.Dispatcher.Invoke(() =>
             {
-                _notifyIcon?.ShowBalloonTip(3000, title, message, ToolTipIcon.Info);
+                _notifyIcon.ShowBalloonTip(3000, title, message, ToolTipIcon.Info);
             });
         }
 
         public void HideAlert()
         {
-            Application.Current?.Dispatcher.Invoke(() =>
+            Application.Current.Dispatcher.Invoke(() =>
             {
                 if (_notifyIcon != null)
                 {
@@ -274,15 +274,15 @@ namespace LocalAIStudio.Services
 
         public void ForceDisconnect()
         {
-            LogMessage?.Invoke(this, "用户强制断开连接");
-            DisconnectRequested?.Invoke(this, EventArgs.Empty);
+            LogMessage.Invoke(this, "用户强制断开连接");
+            DisconnectRequested.Invoke(this, EventArgs.Empty);
 
-            Application.Current?.Dispatcher.Invoke(() =>
+            Application.Current.Dispatcher.Invoke(() =>
             {
                 Task.Run(async () =>
                 {
                     await StopAllServices();
-                    Application.Current?.Dispatcher.Invoke(() =>
+                    Application.Current.Dispatcher.Invoke(() =>
                     {
                         System.Windows.MessageBox.Show(
                             "已强制断开所有远程连接。\n\n如果问题持续存在，请检查网络连接。",
@@ -306,7 +306,7 @@ namespace LocalAIStudio.Services
             }
             catch (Exception ex)
             {
-                LogMessage?.Invoke(this, $"断开连接时出错: {ex.Message}");
+                LogMessage.Invoke(this, $"断开连接时出错: {ex.Message}");
             }
         }
 
@@ -323,7 +323,7 @@ namespace LocalAIStudio.Services
 
         private void ShowMainWindow()
         {
-            Application.Current?.Dispatcher.Invoke(() =>
+            Application.Current.Dispatcher.Invoke(() =>
             {
                 var mainWindow = Application.Current.MainWindow;
                 if (mainWindow != null)
@@ -355,33 +355,33 @@ namespace LocalAIStudio.Services
             HardwareMonitorService.Instance.RemoteAccessStopped -= OnRemoteAccessStopped;
         }
 
-        private void OnCameraStateChanged(object? sender, bool active)
+        private void OnCameraStateChanged(object sender, bool active)
         {
             IsCameraActive = active;
-            LogMessage?.Invoke(this, $"摄像头状态变更: {((active ? "启用" : "禁用"))}");
+            LogMessage.Invoke(this, $"摄像头状态变更: {((active ? "启用" : "禁用"))}");
         }
 
-        private void OnMicrophoneStateChanged(object? sender, bool active)
+        private void OnMicrophoneStateChanged(object sender, bool active)
         {
             IsMicrophoneActive = active;
-            LogMessage?.Invoke(this, $"麦克风状态变更: {((active ? "启用" : "禁用"))}");
+            LogMessage.Invoke(this, $"麦克风状态变更: {((active ? "启用" : "禁用"))}");
         }
 
-        private void OnRemoteAccessStarted(object? sender, EventArgs e)
+        private void OnRemoteAccessStarted(object sender, EventArgs e)
         {
             IsRemoteAccessActive = true;
             ShowAlert("远程访问已启动", "您的计算机正在被远程访问。\n如需终止，请点击通知图标并选择\"强制断开连接\"。");
-            LogMessage?.Invoke(this, "远程访问已启动");
+            LogMessage.Invoke(this, "远程访问已启动");
         }
 
-        private void OnRemoteAccessStopped(object? sender, EventArgs e)
+        private void OnRemoteAccessStopped(object sender, EventArgs e)
         {
             IsRemoteAccessActive = false;
             if (!_isCameraActive && !_isMicrophoneActive)
             {
                 HideAlert();
             }
-            LogMessage?.Invoke(this, "远程访问已停止");
+            LogMessage.Invoke(this, "远程访问已停止");
         }
     }
 }

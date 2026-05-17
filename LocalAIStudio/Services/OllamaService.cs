@@ -72,7 +72,7 @@ namespace LocalAIStudio.Services
             return false;
         }
 
-        public static string? GetOllamaPath()
+        public static string GetOllamaPath()
         {
             if (File.Exists(DefaultInstallPath))
             {
@@ -89,7 +89,7 @@ namespace LocalAIStudio.Services
                 }
             }
 
-            return null;
+            return "";
         }
 
         public static async Task<List<ModelInfo>> GetInstalledModelsAsync()
@@ -164,7 +164,7 @@ namespace LocalAIStudio.Services
             return models;
         }
 
-        public static async Task PullModelAsync(string modelName, IProgress<int>? progress = null, IProgress<string>? status = null, CancellationToken cancellationToken = default)
+        public static async Task PullModelAsync(string modelName, IProgress<int> progress = null, IProgress<string> status = null, CancellationToken cancellationToken = default)
         {
             var ollamaPath = GetOllamaPath();
             if (string.IsNullOrEmpty(ollamaPath))
@@ -188,12 +188,12 @@ namespace LocalAIStudio.Services
             {
                 if (!string.IsNullOrEmpty(e.Data))
                 {
-                    status?.Report(e.Data);
+                    status.Report(e.Data);
                     var match = Regex.Match(e.Data, @"\d+%");
                     if (match.Success)
                     {
                         var pct = int.Parse(match.Value.Trim('%'));
-                        progress?.Report(pct);
+                        progress.Report(pct);
                     }
                 }
             };
@@ -208,7 +208,7 @@ namespace LocalAIStudio.Services
             }
         }
 
-        public static async Task<Process?> StartOllamaServeAsync(CancellationToken cancellationToken = default)
+        public static async Task<Process> StartOllamaServeAsync(CancellationToken cancellationToken = default)
         {
             var ollamaPath = GetOllamaPath();
             if (string.IsNullOrEmpty(ollamaPath))
@@ -462,7 +462,7 @@ namespace LocalAIStudio.Services
             }
         }
 
-        public static async Task<MirrorSource?> AutoSelectBestMirrorAsync(CancellationToken cancellationToken = default)
+        public static async Task<MirrorSource> AutoSelectBestMirrorAsync(CancellationToken cancellationToken = default)
         {
             var mirrors = GetAvailableMirrorSources();
             var bestMirror = mirrors.Find(m => m.IsDefault);

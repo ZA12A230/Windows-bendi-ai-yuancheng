@@ -50,7 +50,7 @@ namespace LocalAIStudio.Services
                 if (now - kvp.Value.RequestTime > _requestTimeout)
                 {
                     expiredKeys.Add(kvp.Key);
-                    ConnectionTimeout?.Invoke(this, kvp.Value);
+                    ConnectionTimeout.Invoke(this, kvp.Value);
                 }
             }
 
@@ -100,7 +100,7 @@ namespace LocalAIStudio.Services
             };
 
             _pendingConnections[request.Id] = request;
-            ConnectionRequested?.Invoke(this, request);
+            ConnectionRequested.Invoke(this, request);
 
             if (!RequireApproval)
             {
@@ -132,11 +132,11 @@ namespace LocalAIStudio.Services
             _permissions[$"{request.ClientId}:{request.Type}"] = permission;
             _pendingConnections.TryRemove(requestId, out _);
 
-            ConnectionApproved?.Invoke(this, request);
+            ConnectionApproved.Invoke(this, request);
             return true;
         }
 
-        public bool RejectConnection(string requestId, string reason = null)
+        public bool RejectConnection(string requestId, string reason = "")
         {
             if (!_pendingConnections.TryGetValue(requestId, out var request))
             {
@@ -144,15 +144,15 @@ namespace LocalAIStudio.Services
             }
 
             request.Status = ConnectionStatus.Rejected;
-            request.StatusMessage = reason ?? "连接已被用户拒绝";
+            request.StatusMessage = reason != "" ? reason : "连接已被用户拒绝";
             request.RejectedTime = DateTime.Now;
 
             _pendingConnections.TryRemove(requestId, out _);
-            ConnectionRejected?.Invoke(this, request);
+            ConnectionRejected.Invoke(this, request);
             return true;
         }
 
-        public bool ValidatePermission(string clientId, ConnectionType type, string clientIp = null)
+        public bool ValidatePermission(string clientId, ConnectionType type, string clientIp = "")
         {
             var key = $"{clientId}:{type}";
             if (!_permissions.TryGetValue(key, out var permission))
@@ -231,7 +231,7 @@ namespace LocalAIStudio.Services
 
         public void Dispose()
         {
-            _cleanupTimer?.Dispose();
+            _cleanupTimer.Dispose();
         }
     }
 
@@ -262,10 +262,10 @@ namespace LocalAIStudio.Services
         public string ClientIp { get; set; } = "";
         public ConnectionType Type { get; set; }
         public ConnectionStatus Status { get; set; }
-        public string? StatusMessage { get; set; }
+        public string StatusMessage { get; set; }
         public DateTime RequestTime { get; set; }
-        public DateTime? ApprovedTime { get; set; }
-        public DateTime? RejectedTime { get; set; }
+        public DateTime ApprovedTime { get; set; }
+        public DateTime RejectedTime { get; set; }
     }
 
     public class ConnectionPermission

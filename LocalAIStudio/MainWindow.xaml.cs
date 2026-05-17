@@ -73,7 +73,7 @@ namespace LocalAIStudio
             _chartTimer.Start();
         }
 
-        private void ChartTimer_Tick(object? sender, EventArgs e)
+        private void ChartTimer_Tick(object sender, EventArgs e)
         {
             try
             {
@@ -294,7 +294,7 @@ namespace LocalAIStudio
                         try
                         {
                             var result = JsonSerializer.Deserialize<OllamaStreamResponse>(line);
-                            if (result?.response != null)
+                            if (result.response != null)
                             {
                                 fullResponse.Append(result.response);
                                 var textBlock = responseBorder.Child as TextBlock;
@@ -320,8 +320,7 @@ namespace LocalAIStudio
             {
                 SendButton.IsEnabled = true;
                 SendButton.Content = "发送";
-                _chatCts?.Dispose();
-                _chatCts = null;
+                _chatCts.Dispose();
             }
         }
 

@@ -19,15 +19,15 @@ namespace LocalAIStudio.Services
         public static RemoteAccessApiServer Instance => _instance.Value;
         #endregion
 
-        private HttpListener? _httpListener;
-        private CancellationTokenSource? _cts;
+        private HttpListener _httpListener;
+        private CancellationTokenSource _cts;
         private bool _isRunning = false;
-        private string? _currentUsername;
-        private string? _currentPasswordHash;
+        private string _currentUsername;
+        private string _currentPasswordHash;
 
-        public event EventHandler? ApiServerStarted;
-        public event EventHandler? ApiServerStopped;
-        public event EventHandler<string>? AccessLogReceived;
+        public event EventHandler ApiServerStarted;
+        public event EventHandler ApiServerStopped;
+        public event EventHandler<string> AccessLogReceived;
 
         public bool IsRunning => _isRunning;
         public int Port { get; private set; } = 8080;
@@ -70,11 +70,11 @@ namespace LocalAIStudio.Services
 
             try
             {
-                _cts?.Cancel();
-                _httpListener?.Stop();
+                _cts.Cancel();
+                _httpListener.Stop();
                 _isRunning = false;
                 HardwareMonitorService.Instance.StopRemoteAccessMonitoring();
-                ApiServerStopped?.Invoke(this, EventArgs.Empty);
+                ApiServerStopped.Invoke(this, EventArgs.Empty);
                 LogAccess("API server stopped");
             }
             catch (Exception ex)
@@ -437,7 +437,7 @@ namespace LocalAIStudio.Services
         {
             var logMessage = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}";
             System.Diagnostics.Debug.WriteLine(logMessage);
-            AccessLogReceived?.Invoke(this, logMessage);
+            AccessLogReceived.Invoke(this, logMessage);
         }
         #endregion
     }

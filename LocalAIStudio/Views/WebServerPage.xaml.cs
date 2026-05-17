@@ -15,7 +15,7 @@ namespace LocalAIStudio.Views
     public partial class WebServerPage : UserControl
     {
         private ObservableCollection<WebsiteInfo> _websites = new ObservableCollection<WebsiteInfo>();
-        private WebsiteInfo? _selectedWebsite;
+        private WebsiteInfo _selectedWebsite;
         private bool _isUpdatingUI = false;
 
         public WebServerPage()
@@ -55,7 +55,7 @@ namespace LocalAIStudio.Views
             EmptyHint.Visibility = _websites.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        private void OnWebsiteAdded(object? sender, WebsiteInfo website)
+        private void OnWebsiteAdded(object sender, WebsiteInfo website)
         {
             Dispatcher.Invoke(() =>
             {
@@ -64,7 +64,7 @@ namespace LocalAIStudio.Views
             });
         }
 
-        private void OnWebsiteRemoved(object? sender, WebsiteInfo website)
+        private void OnWebsiteRemoved(object sender, WebsiteInfo website)
         {
             Dispatcher.Invoke(() =>
             {
@@ -78,7 +78,7 @@ namespace LocalAIStudio.Views
             });
         }
 
-        private void OnWebsiteStarted(object? sender, WebsiteInfo website)
+        private void OnWebsiteStarted(object sender, WebsiteInfo website)
         {
             Dispatcher.Invoke(() =>
             {
@@ -95,7 +95,7 @@ namespace LocalAIStudio.Views
             });
         }
 
-        private void OnWebsiteStopped(object? sender, WebsiteInfo website)
+        private void OnWebsiteStopped(object sender, WebsiteInfo website)
         {
             Dispatcher.Invoke(() =>
             {

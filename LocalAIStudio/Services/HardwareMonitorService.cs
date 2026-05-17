@@ -98,7 +98,7 @@ namespace LocalAIStudio.Services
             }
         }
 
-        public byte[]? CaptureFrame()
+        public byte[] CaptureFrame()
         {
             try
             {
@@ -136,7 +136,7 @@ namespace LocalAIStudio.Services
             return _lastFrame;
         }
 
-        public byte[]? CaptureScreenShot()
+        public byte[] CaptureScreenShot()
         {
             try
             {
@@ -157,7 +157,7 @@ namespace LocalAIStudio.Services
             catch (Exception ex)
             {
                 Debug.WriteLine($"Screenshot error: {ex.Message}");
-                return null;
+                return new byte[0];
             }
         }
 
@@ -218,17 +218,19 @@ namespace LocalAIStudio.Services
             {
                 _intercomActive = false;
 
-                _waveOut?.Stop();
-                _waveOut?.Dispose();
-                _waveOut = null;
+                if (_waveOut != null)
+                {
+                    _waveOut.Stop();
+                    _waveOut.Dispose();
+                }
 
-                _waveReader?.Dispose();
-                _waveReader = null;
+                if (_waveReader != null)
+                {
+                    _waveReader.Dispose();
+                }
 
-                _bufferedWaveProvider = null;
-
-                IntercomStateChanged?.Invoke(this, false);
-                MicrophoneActiveChanged?.Invoke(this, false);
+                IntercomStateChanged.Invoke(this, false);
+                MicrophoneActiveChanged.Invoke(this, false);
                 Debug.WriteLine("Intercom stopped");
             }
             catch (Exception ex)
@@ -247,7 +249,7 @@ namespace LocalAIStudio.Services
 
             try
             {
-                AudioDataReceived?.Invoke(this, audioData);
+                AudioDataReceived.Invoke(this, audioData);
                 _bufferedWaveProvider.AddSamples(audioData, 0, audioData.Length);
             }
             catch (Exception ex)
@@ -354,7 +356,7 @@ namespace LocalAIStudio.Services
         private void ParseNetshOutput(string output, List<WifiInfo> wifiList)
         {
             var lines = output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            WifiInfo? currentWifi = null;
+            WifiInfo currentWifi = null;
 
             foreach (var line in lines)
             {
@@ -407,7 +409,7 @@ namespace LocalAIStudio.Services
                 {
                     foreach (var obj in searcher.Get())
                     {
-                        var name = obj["Name"]?.ToString();
+                        var name = obj["Name"].ToString();
                         if (!string.IsNullOrEmpty(name) && name.Contains("Wireless"))
                         {
                             wifiList.Add(new WifiInfo
@@ -439,11 +441,11 @@ namespace LocalAIStudio.Services
                         {
                             var device = new UsbDeviceInfo
                             {
-                                Name = obj["Name"]?.ToString() ?? "Unknown",
-                                Description = obj["Description"]?.ToString() ?? "",
-                                Status = obj["Status"]?.ToString() ?? "",
-                                DeviceId = obj["DeviceID"]?.ToString() ?? "",
-                                PnpDeviceId = obj["PNPDeviceID"]?.ToString() ?? ""
+                                Name = obj["Name"].ToString() ?? "Unknown",
+                                Description = obj["Description"].ToString() ?? "",
+                                Status = obj["Status"].ToString() ?? "",
+                                DeviceId = obj["DeviceID"].ToString() ?? "",
+                                PnpDeviceId = obj["PNPDeviceID"].ToString() ?? ""
                             };
 
                             if (!string.IsNullOrEmpty(device.Name) && !device.Name.Contains("Unknown"))
@@ -479,12 +481,12 @@ namespace LocalAIStudio.Services
                         {
                             var device = new SystemDeviceInfo
                             {
-                                Name = obj["Name"]?.ToString() ?? "Unknown",
-                                Description = obj["Description"]?.ToString() ?? "",
-                                Status = obj["Status"]?.ToString() ?? "",
-                                Manufacturer = obj["Manufacturer"]?.ToString() ?? "",
-                                DeviceId = obj["DeviceID"]?.ToString() ?? "",
-                                Class = obj["PNPClass"]?.ToString() ?? ""
+                                Name = obj["Name"].ToString() ?? "Unknown",
+                                Description = obj["Description"].ToString() ?? "",
+                                Status = obj["Status"].ToString() ?? "",
+                                Manufacturer = obj["Manufacturer"].ToString() ?? "",
+                                DeviceId = obj["DeviceID"].ToString() ?? "",
+                                Class = obj["PNPClass"].ToString() ?? ""
                             };
 
                             devices.Add(device);
@@ -508,7 +510,7 @@ namespace LocalAIStudio.Services
             if (_isMonitoring) return;
 
             _isMonitoring = true;
-            RemoteAccessStarted?.Invoke(this, EventArgs.Empty);
+            RemoteAccessStarted.Invoke(this, EventArgs.Empty);
         }
 
         public void StopRemoteAccessMonitoring()
@@ -516,7 +518,7 @@ namespace LocalAIStudio.Services
             _isMonitoring = false;
             StopCamera();
             StopIntercom();
-            RemoteAccessStopped?.Invoke(this, EventArgs.Empty);
+            RemoteAccessStopped.Invoke(this, EventArgs.Empty);
         }
         #endregion
     }
