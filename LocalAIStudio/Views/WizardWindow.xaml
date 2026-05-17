@@ -610,7 +610,7 @@
                         <TextBlock Text="在远程端实时查看主机硬件状态" FontSize="18" 
                                    Foreground="#64748B" Margin="0,0,0,30"/>
 
-                        <Wrap HorizontalAlignment="Center">
+                        <WrapPanel HorizontalAlignment="Center">
                             <!-- 摄像头 -->
                             <Border Background="#FEF3C7" CornerRadius="12" Padding="25" Width="250" Margin="10">
                                 <StackPanel HorizontalAlignment="Center">
@@ -682,7 +682,7 @@
                                 <TextBlock Text="内置 HTTP 服务器" FontSize="24" FontWeight="Bold" 
                                            Foreground="#1E3A8A" HorizontalAlignment="Center" Margin="0,0,0,15"/>
 
-                                <Wrap HorizontalAlignment="Center" Margin="0,0,0,20">
+                                <WrapPanel HorizontalAlignment="Center" Margin="0,0,0,20">
                                     <Border Background="White" CornerRadius="8" Padding="15" Margin="5">
                                         <StackPanel>
                                             <TextBlock Text="静态文件" FontSize="14" FontWeight="Bold" 
