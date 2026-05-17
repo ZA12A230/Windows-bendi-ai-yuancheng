@@ -11,10 +11,10 @@ namespace LocalAIStudio.Views
 {
     public partial class OllamaSetupPage : UserControl
     {
-        public event EventHandler? SetupCompleted;
-        private CancellationTokenSource? _cancellationTokenSource;
+        public event EventHandler SetupCompleted;
+        private CancellationTokenSource _cancellationTokenSource;
         private bool _isOllamaInstalled = false;
-        private MirrorSource? _selectedMirror;
+        private MirrorSource _selectedMirror;
 
         public OllamaSetupPage()
         {
@@ -144,7 +144,8 @@ namespace LocalAIStudio.Views
             }
             finally
             {
-                _cancellationTokenSource?.Dispose();
+                if (_cancellationTokenSource != null)
+                    _cancellationTokenSource.Dispose();
                 _cancellationTokenSource = null;
             }
         }
@@ -306,7 +307,7 @@ namespace LocalAIStudio.Views
 
         private void ContinueButton_Click(object sender, RoutedEventArgs e)
         {
-            SetupCompleted?.Invoke(this, EventArgs.Empty);
+            SetupCompleted.Invoke(this, EventArgs.Empty);
         }
 
         public bool IsOllamaInstalled => _isOllamaInstalled;

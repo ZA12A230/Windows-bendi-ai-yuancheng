@@ -15,9 +15,9 @@ namespace LocalAIStudio.Views
     {
         public ObservableCollection<Services.ModelInfo> Models { get; set; }
         public HashSet<string> SelectedModels { get; private set; }
-        public event EventHandler? ModelsSelectedChanged;
+        public event EventHandler ModelsSelectedChanged;
 
-        private CancellationTokenSource? _cancellationTokenSource;
+        private CancellationTokenSource _cancellationTokenSource;
 
         public ModelsPage()
         {
@@ -115,7 +115,8 @@ namespace LocalAIStudio.Views
             }
             finally
             {
-                _cancellationTokenSource?.Dispose();
+                if (_cancellationTokenSource != null)
+                    _cancellationTokenSource.Dispose();
                 _cancellationTokenSource = null;
                 InstallButton.IsEnabled = true;
                 InstallProgressBorder.Visibility = Visibility.Collapsed;
@@ -157,7 +158,7 @@ namespace LocalAIStudio.Views
                 }
 
                 UpdateSelectedModels();
-                ModelsSelectedChanged?.Invoke(this, EventArgs.Empty);
+                ModelsSelectedChanged.Invoke(this, EventArgs.Empty);
             }
         }
 

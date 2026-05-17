@@ -13,7 +13,7 @@ namespace LocalAIStudio.Views
     public partial class UpdateServicePage : UserControl
     {
         private ObservableCollection<ProcessInfo> _monitoredProcesses = new ObservableCollection<ProcessInfo>();
-        private string? _pendingUpdatePath;
+        private string _pendingUpdatePath;
 
         public UpdateServicePage()
         {
@@ -35,7 +35,7 @@ namespace LocalAIStudio.Views
             SilentStartToggle.IsChecked = WatchdogService.Instance.ShouldStartSilently();
 
             var currentVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-            CurrentVersionText.Text = $"v{currentVersion?.Major}.{currentVersion?.Minor}.{currentVersion?.Build}";
+            CurrentVersionText.Text = $"v{currentVersion.Major}.{currentVersion.Minor}.{currentVersion.Build}";
         }
 
         private void LoadMonitoredProcesses()
@@ -44,9 +44,10 @@ namespace LocalAIStudio.Views
 
             RegisterDefaultProcesses();
 
-            foreach (var kvp in WatchdogService.Instance.GetType()
-                .GetField("_monitoredProcesses", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                ?.GetValue(WatchdogService.Instance) as System.Collections.Generic.Dictionary<string, ProcessInfo>)
+            var field = WatchdogService.Instance.GetType()
+                .GetField("_monitoredProcesses", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var dict = field.GetValue(WatchdogService.Instance) as System.Collections.Generic.Dictionary<string, ProcessInfo>;
+            foreach (var kvp in dict)
             {
                 _monitoredProcesses.Add(kvp.Value);
             }

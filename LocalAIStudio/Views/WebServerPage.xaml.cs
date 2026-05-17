@@ -258,7 +258,7 @@ namespace LocalAIStudio.Views
         private void CustomDomainText_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (_selectedWebsite == null || _isUpdatingUI) return;
-            _selectedWebsite.CustomDomain = string.IsNullOrWhiteSpace(CustomDomainText.Text) ? null : CustomDomainText.Text;
+            _selectedWebsite.CustomDomain = string.IsNullOrWhiteSpace(CustomDomainText.Text) ? "" : CustomDomainText.Text;
             WebServerService.Instance.UpdateWebsite(_selectedWebsite);
         }
 

@@ -21,13 +21,13 @@ namespace LocalAIStudio.Services
         private readonly Dictionary<string, HttpListener> _listeners = new Dictionary<string, HttpListener>();
         private readonly Dictionary<string, WebsiteInfo> _websites = new Dictionary<string, WebsiteInfo>();
         private readonly string _websitesDataPath;
-        private CancellationTokenSource? _cts;
+        private CancellationTokenSource _cts;
 
-        public event EventHandler<WebsiteInfo>? WebsiteStarted;
-        public event EventHandler<WebsiteInfo>? WebsiteStopped;
-        public event EventHandler<WebsiteInfo>? WebsiteAdded;
-        public event EventHandler<WebsiteInfo>? WebsiteRemoved;
-        public event EventHandler<string>? AccessLogReceived;
+        public event EventHandler<WebsiteInfo> WebsiteStarted;
+        public event EventHandler<WebsiteInfo> WebsiteStopped;
+        public event EventHandler<WebsiteInfo> WebsiteAdded;
+        public event EventHandler<WebsiteInfo> WebsiteRemoved;
+        public event EventHandler<string> AccessLogReceived;
 
         public IReadOnlyDictionary<string, WebsiteInfo> Websites => _websites;
         public ServerConfig Config { get; private set; } = new ServerConfig();
@@ -43,7 +43,7 @@ namespace LocalAIStudio.Services
             var website = new WebsiteInfo(name, rootPath, port);
             _websites[website.Id] = website;
             SaveWebsites();
-            WebsiteAdded?.Invoke(this, website);
+            WebsiteAdded.Invoke(this, website);
             return website;
         }
 
@@ -54,7 +54,7 @@ namespace LocalAIStudio.Services
                 StopWebsite(websiteId);
                 _websites.Remove(websiteId);
                 SaveWebsites();
-                WebsiteRemoved?.Invoke(this, website);
+                WebsiteRemoved.Invoke(this, website);
             }
         }
 
@@ -67,7 +67,7 @@ namespace LocalAIStudio.Services
             }
         }
 
-        public WebsiteInfo? GetWebsite(string websiteId)
+        public WebsiteInfo GetWebsite(string websiteId)
         {
             return _websites.TryGetValue(websiteId, out var website) ? website : null;
         }
@@ -95,7 +95,7 @@ namespace LocalAIStudio.Services
                 _ = Task.Run(() => ListenLoop(websiteId, listener, _cts.Token));
 
                 SaveWebsites();
-                WebsiteStarted?.Invoke(this, website);
+                WebsiteStarted.Invoke(this, website);
                 LogAccess($"Website '{website.Name}' started on port {website.Port}");
 
                 return true;
@@ -123,7 +123,7 @@ namespace LocalAIStudio.Services
 
                 website.IsRunning = false;
                 SaveWebsites();
-                WebsiteStopped?.Invoke(this, website);
+                WebsiteStopped.Invoke(this, website);
                 LogAccess($"Website '{website.Name}' stopped");
             }
             catch (Exception ex)
@@ -393,7 +393,7 @@ namespace LocalAIStudio.Services
         {
             var logMessage = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] [WebServer] {message}";
             Debug.WriteLine(logMessage);
-            AccessLogReceived?.Invoke(this, logMessage);
+            AccessLogReceived.Invoke(this, logMessage);
         }
     }
 }

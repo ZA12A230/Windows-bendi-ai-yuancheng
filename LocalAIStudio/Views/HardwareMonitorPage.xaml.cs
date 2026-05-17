@@ -10,7 +10,7 @@ namespace LocalAIStudio.Views
 {
     public partial class HardwareMonitorPage : UserControl
     {
-        private DispatcherTimer? _refreshTimer;
+        private DispatcherTimer _refreshTimer;
         private bool _cameraEnabled = false;
 
         public HardwareMonitorPage()
@@ -44,7 +44,8 @@ namespace LocalAIStudio.Views
 
         private void StopTimer()
         {
-            _refreshTimer?.Stop();
+            if (_refreshTimer != null)
+                _refreshTimer.Stop();
         }
 
         private void SubscribeToEvents()
@@ -77,7 +78,7 @@ namespace LocalAIStudio.Views
             PortTextBox.Text = RemoteAccessApiServer.Instance.Port.ToString();
         }
 
-        private void RefreshTimer_Tick(object? sender, EventArgs e)
+        private void RefreshTimer_Tick(object sender, EventArgs e)
         {
             RefreshAllInfo();
         }
@@ -160,7 +161,7 @@ namespace LocalAIStudio.Views
             await RemoteAccessApiServer.Instance.StopServer();
         }
 
-        private void ApiServer_Started(object? sender, EventArgs e)
+        private void ApiServer_Started(object sender, EventArgs e)
         {
             Dispatcher.Invoke(() =>
             {
@@ -171,7 +172,7 @@ namespace LocalAIStudio.Views
             });
         }
 
-        private void ApiServer_Stopped(object? sender, EventArgs e)
+        private void ApiServer_Stopped(object sender, EventArgs e)
         {
             Dispatcher.Invoke(() =>
             {
@@ -181,13 +182,13 @@ namespace LocalAIStudio.Views
             });
         }
 
-        private void ApiServer_AccessLog(object? sender, string log)
+        private void ApiServer_AccessLog(object sender, string log)
         {
             // Optional: Show log in UI
             System.Diagnostics.Debug.WriteLine(log);
         }
 
-        private void RemoteAccess_Started(object? sender, EventArgs e)
+        private void RemoteAccess_Started(object sender, EventArgs e)
         {
             Dispatcher.Invoke(() =>
             {
@@ -195,7 +196,7 @@ namespace LocalAIStudio.Views
             });
         }
 
-        private void RemoteAccess_Stopped(object? sender, EventArgs e)
+        private void RemoteAccess_Stopped(object sender, EventArgs e)
         {
             Dispatcher.Invoke(() =>
             {
@@ -203,7 +204,7 @@ namespace LocalAIStudio.Views
             });
         }
 
-        private void HardwareMonitor_CameraStateChanged(object? sender, bool active)
+        private void HardwareMonitor_CameraStateChanged(object sender, bool active)
         {
             Dispatcher.Invoke(() =>
             {

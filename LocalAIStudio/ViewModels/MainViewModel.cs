@@ -39,12 +39,12 @@ namespace LocalAIStudio.ViewModels
         private double _diskUsage;
         private double _networkUsage;
         private double _aiCpuUsage;
-        private CancellationTokenSource? _chatCts;
+        private CancellationTokenSource _chatCts;
 
-        public event PropertyChangedEventHandler? PropertyChanged;
-        public event EventHandler<string>? NavigateToPage;
-        public event EventHandler<string>? ChatMessageReceived;
-        public event EventHandler<(double time, double system, double ai)>? ChartDataUpdated;
+        public event PropertyChangedEventHandler PropertyChanged;
+        public event EventHandler<string> NavigateToPage;
+        public event EventHandler<string> ChatMessageReceived;
+        public event EventHandler<(double time, double system, double ai)> ChartDataUpdated;
 
         #region Properties
 
@@ -257,8 +257,8 @@ namespace LocalAIStudio.ViewModels
             }
         }
 
-        private PerformanceCounter? _cpuCounter;
-        private PerformanceCounter? _ramCounter;
+        private PerformanceCounter _cpuCounter;
+        private PerformanceCounter _ramCounter;
         private DateTime _lastNetworkBytes = DateTime.Now;
         private long _lastTotalBytes = 0;
 
@@ -287,8 +287,8 @@ namespace LocalAIStudio.ViewModels
         {
             try
             {
-                CpuUsage = _cpuCounter?.NextValue() ?? 0;
-                MemoryUsage = _ramCounter?.NextValue() ?? 0;
+                CpuUsage = _cpuCounter != null ? _cpuCounter.NextValue() : 0;
+                MemoryUsage = _ramCounter != null ? _ramCounter.NextValue() : 0;
 
                 var currentBytes = NetworkInterface.GetAllNetworkInterfaces()
                     .Where(n => n.OperationalStatus == OperationalStatus.Up)
@@ -306,7 +306,7 @@ namespace LocalAIStudio.ViewModels
 
                 AiCpuUsage = GetAiProcessCpuUsage();
 
-                ChartDataUpdated?.Invoke(this, (DateTime.Now.TimeOfDay.TotalSeconds, CpuUsage, AiCpuUsage));
+                ChartDataUpdated.Invoke(this, (DateTime.Now.TimeOfDay.TotalSeconds, CpuUsage, AiCpuUsage));
             }
             catch { }
         }
@@ -327,16 +327,16 @@ namespace LocalAIStudio.ViewModels
             return 0;
         }
 
-        private void Navigate(object? param)
+        private void Navigate(object param)
         {
             if (param is string page)
             {
                 CurrentPage = page;
-                NavigateToPage?.Invoke(this, page);
+                NavigateToPage.Invoke(this, page);
             }
         }
 
-        private async Task SendChatAsync(object? param)
+        private async Task SendChatAsync(object param)
         {
             if (string.IsNullOrWhiteSpace(ChatInput)) return;
 
@@ -393,7 +393,7 @@ namespace LocalAIStudio.ViewModels
                             {
                                 fullResponse.Append(result.response);
                                 ChatResponse = fullResponse.ToString();
-                                ChatMessageReceived?.Invoke(this, result.response);
+                                ChatMessageReceived.Invoke(this, result.response);
                             }
                         }
                         catch { }
@@ -415,14 +415,16 @@ namespace LocalAIStudio.ViewModels
                     ChatMessages.Add($"助手: {fullResponse}");
                 }
                 IsStreaming = false;
-                _chatCts?.Dispose();
+                if (_chatCts != null)
+                    _chatCts.Dispose();
                 _chatCts = null;
             }
         }
 
         private void StopChat()
         {
-            _chatCts?.Cancel();
+            if (_chatCts != null)
+                _chatCts.Cancel();
         }
 
         private void ConnectRemote()
@@ -443,7 +445,7 @@ namespace LocalAIStudio.ViewModels
             Logs.Add($"[{DateTime.Now:HH:mm:ss}] 已断开远程连接");
         }
 
-        private async Task StartWebsiteAsync(object? param)
+        private async Task StartWebsiteAsync(object param)
         {
             if (param is WebsiteInfo site)
             {
@@ -452,7 +454,7 @@ namespace LocalAIStudio.ViewModels
             }
         }
 
-        private async Task StopWebsiteAsync(object? param)
+        private async Task StopWebsiteAsync(object param)
         {
             if (param is WebsiteInfo site)
             {
@@ -461,7 +463,7 @@ namespace LocalAIStudio.ViewModels
             }
         }
 
-        private void OpenInBrowser(object? param)
+        private void OpenInBrowser(object param)
         {
             if (param is WebsiteInfo site && site.IsRunning)
             {
@@ -473,7 +475,7 @@ namespace LocalAIStudio.ViewModels
             }
         }
 
-        private void CopyLink(object? param)
+        private void CopyLink(object param)
         {
             if (param is WebsiteInfo site)
             {
@@ -482,14 +484,14 @@ namespace LocalAIStudio.ViewModels
             }
         }
 
-        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            PropertyChanged.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         private class OllamaResponse
         {
-            public string? response { get; set; }
+            public string response { get; set; }
             public bool done { get; set; }
         }
     }

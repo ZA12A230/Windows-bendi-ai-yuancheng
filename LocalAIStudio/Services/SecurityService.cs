@@ -118,9 +118,9 @@ namespace LocalAIStudio.Services
             return $"{Convert.ToBase64String(payloadBytes).Replace("+", "-").Replace("/", "_")}.{signature}";
         }
 
-        public bool ValidateAccessToken(string token, out string? username)
+        public bool ValidateAccessToken(string token, out string username)
         {
-            username = null;
+            username = "";
 
             if (string.IsNullOrEmpty(token))
                 return false;
@@ -239,9 +239,9 @@ namespace LocalAIStudio.Services
             SaveConfig();
         }
 
-        public string? GetFrpToken()
+        public string GetFrpToken()
         {
-            return string.IsNullOrEmpty(_config.FrpcToken) ? null : DecryptWithDPAPI(_config.FrpcToken);
+            return string.IsNullOrEmpty(_config.FrpcToken) ? "" : DecryptWithDPAPI(_config.FrpcToken);
         }
 
         #endregion
