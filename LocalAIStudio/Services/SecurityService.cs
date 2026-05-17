@@ -180,7 +180,7 @@ namespace LocalAIStudio.Services
             _config = LoadConfig();
         }
 
-        private AppConfig LoadConfig()
+        public AppConfig LoadConfig()
         {
             try
             {
