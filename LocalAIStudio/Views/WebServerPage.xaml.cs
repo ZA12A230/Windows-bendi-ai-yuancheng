@@ -155,7 +155,7 @@ namespace LocalAIStudio.Views
                         bool success = await WebServerService.Instance.StartWebsite(websiteId);
                         if (!success)
                         {
-                            MessageBox.Show($"无法启动网站，可能端口 {website.Port} 已被占用",
+                            System.Windows.MessageBox.Show($"无法启动网站，可能端口 {website.Port} 已被占用",
                                 "启动失败", MessageBoxButton.OK, MessageBoxImage.Warning);
                         }
                     }
@@ -170,11 +170,11 @@ namespace LocalAIStudio.Views
                 var website = WebServerService.Instance.GetWebsite(websiteId);
                 if (website != null)
                 {
-                    var result = MessageBox.Show(
-                        $"确定要删除网站 '{website.Name}' 吗？\n\n注意：这不会删除网站文件",
-                        "确认删除",
-                        MessageBoxButton.YesNo,
-                        MessageBoxImage.Question);
+                    var result = System.Windows.MessageBox.Show(
+                    $"确定要删除网站 '{website.Name}' 吗？\n\n注意：这不会删除网站文件",
+                    "确认删除",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
 
                     if (result == MessageBoxResult.Yes)
                     {
@@ -266,7 +266,7 @@ namespace LocalAIStudio.Views
         {
             if (_selectedWebsite == null)
             {
-                MessageBox.Show("请先选择一个网站", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                System.Windows.MessageBox.Show("请先选择一个网站", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
@@ -278,7 +278,7 @@ namespace LocalAIStudio.Views
             if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 var result = await WebServerService.Instance.UploadFiles(_selectedWebsite.Id, dialog.SelectedPath);
-                MessageBox.Show(result, "上传结果", MessageBoxButton.OK, MessageBoxImage.Information);
+                System.Windows.MessageBox.Show(result, "上传结果", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
@@ -286,7 +286,7 @@ namespace LocalAIStudio.Views
         {
             if (_selectedWebsite == null)
             {
-                MessageBox.Show("请先选择一个网站", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                System.Windows.MessageBox.Show("请先选择一个网站", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
@@ -307,12 +307,12 @@ namespace LocalAIStudio.Views
                         var destPath = Path.Combine(_selectedWebsite.RootPath, fileName);
                         File.Copy(file, destPath, true);
                     }
-                    MessageBox.Show($"成功上传 {dialog.FileNames.Length} 个文件", "上传成功", 
+                    System.Windows.MessageBox.Show($"成功上传 {dialog.FileNames.Length} 个文件", "上传成功", 
                         MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"上传失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    System.Windows.MessageBox.Show($"上传失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -352,7 +352,7 @@ namespace LocalAIStudio.Views
             Grid.SetRow(nameLabel, 1);
             grid.Children.Add(nameLabel);
 
-            _nameTextBox = new TextBox { Margin = new Thickness(0, 0, 0, 15), FontSize = 14, Padding = new Thickness(10) };
+            _nameTextBox = new System.Windows.Controls.TextBox { Margin = new Thickness(0, 0, 0, 15), FontSize = 14, Padding = new Thickness(10) };
             Grid.SetRow(_nameTextBox, 1);
             grid.Children.Add(_nameTextBox);
 
@@ -364,11 +364,11 @@ namespace LocalAIStudio.Views
             pathPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             pathPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
-            _pathTextBox = new TextBox { FontSize = 14, Padding = new Thickness(10) };
+            _pathTextBox = new System.Windows.Controls.TextBox { FontSize = 14, Padding = new Thickness(10) };
             Grid.SetColumn(_pathTextBox, 0);
             pathPanel.Children.Add(_pathTextBox);
 
-            var browseBtn = new Button { Content = "浏览", Width = 70, Margin = new Thickness(10, 0, 0, 0), Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(108, 117, 125)), Foreground = System.Windows.Media.Brushes.White, BorderThickness = new Thickness(0) };
+            var browseBtn = new System.Windows.Controls.Button { Content = "浏览", Width = 70, Margin = new Thickness(10, 0, 0, 0), Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(108, 117, 125)), Foreground = System.Windows.Media.Brushes.White, BorderThickness = new Thickness(0) };
             browseBtn.Click += (s, e) =>
             {
                 var dialog = new System.Windows.Forms.FolderBrowserDialog();
@@ -387,7 +387,7 @@ namespace LocalAIStudio.Views
             Grid.SetRow(portLabel, 4);
             grid.Children.Add(portLabel);
 
-            _portTextBox = new TextBox { Text = "8080", FontSize = 14, Padding = new Thickness(10), Width = 120, HorizontalAlignment = HorizontalAlignment.Left };
+            _portTextBox = new System.Windows.Controls.TextBox { Text = "8080", FontSize = 14, Padding = new Thickness(10), Width = 120, HorizontalAlignment = System.Windows.HorizontalAlignment.Left };
             Grid.SetRow(_portTextBox, 4);
             grid.Children.Add(_portTextBox);
 
@@ -397,12 +397,12 @@ namespace LocalAIStudio.Views
 
             Content = grid;
 
-            var buttonPanel = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 30, 0, 0) };
-            var okBtn = new Button { Content = "添加", Width = 100, Height = 40, Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(59, 130, 246)), Foreground = System.Windows.Media.Brushes.White, BorderThickness = new Thickness(0), FontSize = 14 };
+            var buttonPanel = new StackPanel { Orientation = System.Windows.Controls.Orientation.Horizontal, HorizontalAlignment = System.Windows.HorizontalAlignment.Right, Margin = new Thickness(0, 30, 0, 0) };
+            var okBtn = new System.Windows.Controls.Button { Content = "添加", Width = 100, Height = 40, Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(59, 130, 246)), Foreground = System.Windows.Media.Brushes.White, BorderThickness = new Thickness(0), FontSize = 14 };
             okBtn.Click += OkBtn_Click;
             buttonPanel.Children.Add(okBtn);
 
-            var cancelBtn = new Button { Content = "取消", Width = 100, Height = 40, Margin = new Thickness(10, 0, 0, 0), Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(203, 213, 225)), BorderThickness = new Thickness(0), FontSize = 14 };
+            var cancelBtn = new System.Windows.Controls.Button { Content = "取消", Width = 100, Height = 40, Margin = new Thickness(10, 0, 0, 0), Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(203, 213, 225)), BorderThickness = new Thickness(0), FontSize = 14 };
             cancelBtn.Click += (s, e) => DialogResult = false;
             buttonPanel.Children.Add(cancelBtn);
 
@@ -415,19 +415,19 @@ namespace LocalAIStudio.Views
         {
             if (string.IsNullOrWhiteSpace(_nameTextBox.Text))
             {
-                MessageBox.Show("请输入网站名称", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show("请输入网站名称", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(_pathTextBox.Text))
             {
-                MessageBox.Show("请选择网站路径", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show("请选择网站路径", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (!int.TryParse(_portTextBox.Text, out int port) || port < 1 || port > 65535)
             {
-                MessageBox.Show("请输入有效的端口号 (1-65535)", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show("请输入有效的端口号 (1-65535)", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 

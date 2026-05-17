@@ -15,13 +15,13 @@ namespace LocalAIStudio.Services
         public static RemoteDesktopService Instance => _instance.Value;
         #endregion
 
-        private Process? _vncProcess;
+        private Process _vncProcess;
         private readonly string _appDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "LocalAIStudio");
         private readonly string _vncPath;
         private readonly string _configPath;
         private readonly byte[] _encryptionKey = Encoding.UTF8.GetBytes("LocalAIStudioKey12345");
 
-        public event EventHandler<bool>? StatusChanged;
+        public event EventHandler<bool> StatusChanged;
         public bool IsRunning => _vncProcess != null && !_vncProcess.HasExited;
         public int VncPort { get; private set; } = 5900;
         public string LocalIpAddress => FrpService.Instance.GetLocalIpPrefix() + "1";
@@ -229,7 +229,7 @@ namespace LocalAIStudio.Services
                         StartFrpPortForward(port);
                     }
 
-                    StatusChanged?.Invoke(this, true);
+                    StatusChanged.Invoke(this, true);
                     return true;
                 }
                 else
@@ -248,7 +248,7 @@ namespace LocalAIStudio.Services
                     };
                     _vncProcess.Exited += VncProcessExited;
                     _vncProcess.Start();
-                    StatusChanged?.Invoke(this, true);
+                    StatusChanged.Invoke(this, true);
                     return true;
                 }
             }
