@@ -51,8 +51,8 @@ namespace LocalAIStudio.Views
                     Height = 10,
                     CornerRadius = new CornerRadius(5),
                     Background = i <= _currentStep ? 
-                        new SolidColorBrush((Color)ColorConverter.ConvertFromString("#3B82F6")) :
-                        new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E5E7EB")),
+                        new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#3B82F6")) :
+                        new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#E5E7EB")),
                     Margin = new Thickness(5, 0, 5, 0)
                 };
 
@@ -244,7 +244,7 @@ namespace LocalAIStudio.Views
         private async void CheckOllamaInstallation()
         {
             OllamaStatusText.Text = "正在检测 Ollama...";
-            OllamaStatusBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FEF3C7"));
+            OllamaStatusBorder.Background = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FEF3C7"));
 
             await Task.Delay(500);
 
@@ -271,20 +271,20 @@ namespace LocalAIStudio.Views
                     _ollamaInstalled = true;
                     OllamaStatusText.Text = $"已安装 Ollama {output.Trim()}";
                     OllamaStatusIcon.Text = "✓";
-                    OllamaStatusBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F0FDF4"));
-                    OllamaStatusBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#22C55E"));
-                    OllamaStatusIcon.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#22C55E"));
-                    OllamaStatusText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#166534"));
+                    OllamaStatusBorder.Background = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#F0FDF4"));
+                    OllamaStatusBorder.BorderBrush = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#22C55E"));
+                    OllamaStatusIcon.Foreground = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#22C55E"));
+                    OllamaStatusText.Foreground = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#166534"));
                 }
                 else
                 {
                     _ollamaInstalled = false;
                     OllamaStatusText.Text = "暂未安装 Ollama";
                     OllamaStatusIcon.Text = "✗";
-                    OllamaStatusBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FEE2E2"));
-                    OllamaStatusBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#EF4444"));
-                    OllamaStatusIcon.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#EF4444"));
-                    OllamaStatusText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#991B1B"));
+                    OllamaStatusBorder.Background = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FEE2E2"));
+                    OllamaStatusBorder.BorderBrush = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#EF4444"));
+                    OllamaStatusIcon.Foreground = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#EF4444"));
+                    OllamaStatusText.Foreground = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#991B1B"));
                 }
             }
             catch
@@ -292,10 +292,10 @@ namespace LocalAIStudio.Views
                 _ollamaInstalled = false;
                 OllamaStatusText.Text = "暂未安装 Ollama";
                 OllamaStatusIcon.Text = "✗";
-                OllamaStatusBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FEE2E2"));
-                OllamaStatusBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#EF4444"));
-                OllamaStatusIcon.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#EF4444"));
-                OllamaStatusText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#991B1B"));
+                OllamaStatusBorder.Background = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FEE2E2"));
+                OllamaStatusBorder.BorderBrush = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#EF4444"));
+                OllamaStatusIcon.Foreground = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#EF4444"));
+                OllamaStatusText.Foreground = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#991B1B"));
             }
         }
 
@@ -310,7 +310,7 @@ namespace LocalAIStudio.Views
                 _modelsDetected = false;
                 ModelsStatusText.Text = "暂未安装本地 AI 模型";
                 ModelsStatusIcon.Text = "✗";
-                ModelsStatusBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FEE2E2"));
+                ModelsStatusBorder.Background = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FEE2E2"));
                 ModelsListBox.ItemsSource = null;
                 return;
             }
@@ -353,7 +353,7 @@ namespace LocalAIStudio.Views
                     _modelsDetected = true;
                     ModelsStatusText.Text = $"已检测到 {models.Count} 个已安装模型";
                     ModelsStatusIcon.Text = "✓";
-                    ModelsStatusBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F0FDF4"));
+                    ModelsStatusBorder.Background = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#F0FDF4"));
                     ModelsListBox.ItemsSource = models;
                 }
                 else
@@ -361,7 +361,7 @@ namespace LocalAIStudio.Views
                     _modelsDetected = false;
                     ModelsStatusText.Text = "暂未安装本地 AI 模型";
                     ModelsStatusIcon.Text = "✗";
-                    ModelsStatusBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FEE2E2"));
+                    ModelsStatusBorder.Background = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FEE2E2"));
                     ModelsListBox.ItemsSource = null;
                 }
             }
@@ -370,7 +370,7 @@ namespace LocalAIStudio.Views
                 _modelsDetected = false;
                 ModelsStatusText.Text = "暂未安装本地 AI 模型";
                 ModelsStatusIcon.Text = "✗";
-                ModelsStatusBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FEE2E2"));
+                ModelsStatusBorder.Background = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FEE2E2"));
                 ModelsListBox.ItemsSource = null;
             }
         }
@@ -444,7 +444,7 @@ namespace LocalAIStudio.Views
                                 {
                                     DeployOllamaButton.Content = "部署完成 ✓";
                                     DeployOllamaButton.Background = new SolidColorBrush(
-                                        (Color)ColorConverter.ConvertFromString("#22C55E"));
+                                        (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#22C55E"));
                                     DeployStatus.Text = "Ollama 部署成功！";
                                 });
 
@@ -493,7 +493,7 @@ namespace LocalAIStudio.Views
                             {
                                 DeployOllamaButton.Content = "部署完成 ✓";
                                 DeployOllamaButton.Background = new SolidColorBrush(
-                                    (Color)ColorConverter.ConvertFromString("#22C55E"));
+                                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#22C55E"));
                                 DeployStatus.Text = "Ollama 部署成功！";
                             });
 

@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using LocalAIStudio.Services;
+using Microsoft.Win32;
 
 namespace LocalAIStudio
 {
