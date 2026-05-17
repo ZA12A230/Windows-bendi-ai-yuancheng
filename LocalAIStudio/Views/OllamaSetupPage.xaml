@@ -178,15 +178,17 @@
                         <Border x:Name="ProgressPanel" 
                                 Visibility="Collapsed"
                                 Margin="0,15,0,0">
-                            <TextBlock x:Name="ProgressText"
-                                       Text="正在下载..."
-                                       FontSize="12"
-                                       Foreground="#666666"
-                                       Margin="0,0,0,8"/>
-                            <ProgressBar x:Name="InstallProgressBar" 
-                                         Height="8"
-                                         Background="#E0E8FF"
-                                         Foreground="#3B82F6"/>
+                            <StackPanel>
+                                <TextBlock x:Name="ProgressText"
+                                           Text="正在下载..."
+                                           FontSize="12"
+                                           Foreground="#666666"
+                                           Margin="0,0,0,8"/>
+                                <ProgressBar x:Name="InstallProgressBar" 
+                                             Height="8"
+                                             Background="#E0E8FF"
+                                             Foreground="#3B82F6"/>
+                            </StackPanel>
                         </Border>
                     </StackPanel>
 
