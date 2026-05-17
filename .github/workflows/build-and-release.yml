@@ -185,9 +185,25 @@ jobs:
         }
       continue-on-error: false
 
-    - name: Upload build artifacts
+    - name: Create Release Archive
+      if: success()
+      run: |
+        Compress-Archive -Path ./publish/* -DestinationPath ./${{ env.PROJECT_NAME }}-win-x64.zip -Force
+        Write-Host "Archive created successfully"
+
+    - name: Upload EXE as Artifact
+      if: success()
       uses: actions/upload-artifact@v4
+      with:
+        name: LocalAIStudio-EXE
+        path: |
+          ./publish/${{ env.PROJECT_NAME }}.exe
+          ./${{ env.PROJECT_NAME }}-win-x64.zip
+        retention-days: 30
+
+    - name: Upload build logs on failure
       if: failure()
+      uses: actions/upload-artifact@v4
       with:
         name: build-logs
         path: |
@@ -195,52 +211,3 @@ jobs:
           publish.log
           restore.log
           full_build_output.txt
-
-    - name: Create Release Archive
-      if: success()
-      run: |
-        Compress-Archive -Path ./publish/* -DestinationPath ./${{ env.PROJECT_NAME }}-win-x64.zip -Force
-        
-    - name: Get Release Notes
-      id: release_notes
-      if: success()
-      run: |
-        $commitMessage = git log -1 --pretty=%B
-        $releaseNotes = Get-Content README.md -ErrorAction SilentlyContinue | Select-Object -First 50
-        if (-not $releaseNotes) {
-          $releaseNotes = "LocalAIStudio Release"
-        }
-        $releaseNotes | Out-File -Encoding UTF8 release_notes.md
-        echo "commit_message=$commitMessage" >> $env:GITHUB_OUTPUT
-
-    - name: Create Release
-      id: create_release
-      if: success()
-      uses: softprops/action-gh-release@v2
-      with:
-        tag_name: ${{ github.event.inputs.version || github.ref_name }}
-        name: Release ${{ github.event.inputs.version || github.ref_name }}
-        body_path: ./release_notes.md
-        draft: false
-        prerelease: false
-        files: |
-          ${{ env.PROJECT_NAME }}-win-x64.zip
-        fail_on_unmatched_files: true
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Upload EXE as Release Asset
-      if: success()
-      uses: softprops/action-gh-release@v2
-      with:
-        tag_name: ${{ github.event.inputs.version || github.ref_name }}
-        files: ./publish/${{ env.PROJECT_NAME }}.exe
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  build-success:
-    needs: [build-windows]
-    runs-on: ubuntu-latest
-    steps:
-    - name: Build Complete
-      run: echo "Build and Release completed successfully!"
