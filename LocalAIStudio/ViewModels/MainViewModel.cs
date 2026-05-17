@@ -14,6 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using LocalAIStudio.Models;
 using LocalAIStudio.Services;
 using Microsoft.Win32;
 
