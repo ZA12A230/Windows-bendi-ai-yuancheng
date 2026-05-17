@@ -145,13 +145,13 @@ namespace LocalAIStudio.Views
                 }
                 else
                 {
-                    MessageBox.Show("请输入有效的端口号", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    System.Windows.MessageBox.Show("请输入有效的端口号", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                     ApiServerToggle.IsChecked = false;
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"启动失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"启动失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 ApiServerToggle.IsChecked = false;
             }
         }
@@ -226,16 +226,16 @@ namespace LocalAIStudio.Views
             {
                 if (int.TryParse(PortTextBox.Text, out int port))
                 {
-                    MessageBox.Show("配置已保存！重启服务生效。", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                    System.Windows.MessageBox.Show("配置已保存！重启服务生效。", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 else
                 {
-                    MessageBox.Show("请输入有效的端口号", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    System.Windows.MessageBox.Show("请输入有效的端口号", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"保存失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"保存失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -253,11 +253,11 @@ namespace LocalAIStudio.Views
                     bool success = HardwareMonitorService.Instance.InitializeCamera();
                     if (success)
                     {
-                        MessageBox.Show("摄像头已启用！", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                        System.Windows.MessageBox.Show("摄像头已启用！", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                     else
                     {
-                        MessageBox.Show("摄像头初始化失败", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                        System.Windows.MessageBox.Show("摄像头初始化失败", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
                 else
@@ -267,7 +267,7 @@ namespace LocalAIStudio.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"操作失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"操作失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -280,7 +280,7 @@ namespace LocalAIStudio.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"停止失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"停止失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
         #endregion

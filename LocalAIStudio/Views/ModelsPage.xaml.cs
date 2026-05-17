@@ -60,7 +60,7 @@ namespace LocalAIStudio.Views
         {
             if (!string.IsNullOrWhiteSpace(ModelLibraryUrl.Text))
             {
-                Clipboard.SetText(ModelLibraryUrl.Text);
+                System.Windows.Clipboard.SetText(ModelLibraryUrl.Text);
                 var originalContent = CopyUrlButton.Content;
                 CopyUrlButton.Content = "已复制";
                 System.Threading.Tasks.Task.Delay(1500).ContinueWith(_ =>
@@ -103,7 +103,7 @@ namespace LocalAIStudio.Views
 
                 await OllamaService.PullModelAsync(modelName, progress, status, _cancellationTokenSource.Token);
                 await RefreshModelsAsync();
-                MessageBox.Show($"模型 {modelName} 安装成功", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                System.Windows.MessageBox.Show($"模型 {modelName} 安装成功", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (OperationCanceledException)
             {
@@ -111,7 +111,7 @@ namespace LocalAIStudio.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"安装模型失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"安装模型失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {

@@ -50,44 +50,71 @@ jobs:
       id: build
       run: |
         try {
+          Write-Host "=== Starting Build ==="
           $buildOutput = dotnet build ${{ env.PROJECT_FILE }} -c Release --no-restore 2>&1
           $buildOutput | Tee-Object -FilePath build.log
           
           if ($LASTEXITCODE -ne 0) {
             Write-Host "::error::Build failed with exit code $LASTEXITCODE"
+            Write-Host "=== Detailed Error Analysis ==="
             
-            # Analyze build errors
-            $errorPattern = '\((\d+),(\d+)\): error (\w+): (.*?)\s+\[.*?\.csproj\]'
+            # First, save all output for debugging
+            $buildOutput | Out-File -FilePath full_build_output.txt -Encoding utf8
+            
+            # Analyze build errors - improved pattern matching
+            $errorPattern = '(?s)(.*?)\((\d+),(\d+)\): error (\w+): (.*?)\s+\[(.*?)\.csproj\]'
             $errors = $buildOutput | Select-String -Pattern $errorPattern -AllMatches
             
             if ($errors) {
+              $errorCount = 0
               foreach ($match in $errors.Matches) {
-                $file = $match.Context.PreContext[0] -replace '^\s*', '' -replace '\s*$', ''
-                $line = $match.Groups[1].Value
-                $column = $match.Groups[2].Value
-                $errorCode = $match.Groups[3].Value
-                $message = $match.Groups[4].Value
+                $errorCount++
+                $filePath = $match.Groups[1].Value.Trim()
+                $line = $match.Groups[2].Value
+                $column = $match.Groups[3].Value
+                $errorCode = $match.Groups[4].Value
+                $message = $match.Groups[5].Value
+                $projectFile = $match.Groups[6].Value
                 
-                Write-Host "::error file=${file},line=${line},col=${column}::${errorCode}: ${message}"
-                Write-Host "---"
-                Write-Host "Error in file: $file"
-                Write-Host "Location: Line $line, Column $column"
-                Write-Host "Error Code: $errorCode"
-                Write-Host "Reason: $message"
-                Write-Host "---"
+                # Try to normalize file path
+                if (-not [System.IO.Path]::IsPathRooted($filePath)) {
+                  $filePath = Join-Path $env:GITHUB_WORKSPACE $filePath
+                }
+                
+                Write-Host "::error file=${filePath},line=${line},col=${column}::${errorCode}: ${message}"
+                Write-Host ""
+                Write-Host "========================================"
+                Write-Host "ERROR #${errorCount}"
+                Write-Host "========================================"
+                Write-Host "File:        ${filePath}"
+                Write-Host "Location:    Line ${line}, Column ${column}"
+                Write-Host "Error Code:  ${errorCode}"
+                Write-Host "Project:     ${projectFile}.csproj"
+                Write-Host "Message:     ${message}"
+                Write-Host "========================================"
+                Write-Host ""
               }
+              Write-Host "Total Errors Found: ${errorCount}"
             } else {
-              # Fallback: look for any line with "error"
+              Write-Host "Could not parse specific errors. Showing all lines with 'error':"
               $errorLines = $buildOutput | Where-Object { $_ -match 'error' }
+              $lineNum = 0
               foreach ($line in $errorLines) {
-                Write-Host "::error::${line}"
+                $lineNum++
+                Write-Host "::error::Error ${lineNum}: ${line}"
               }
             }
+            
+            # Show context around errors
+            Write-Host ""
+            Write-Host "=== Full Build Output ==="
+            $buildOutput
             
             exit $LASTEXITCODE
           }
         } catch {
           Write-Host "::error::Build exception: $_"
+          Write-Host "Stack Trace: $($_.ScriptStackTrace)"
           exit 1
         }
       continue-on-error: false
@@ -96,6 +123,7 @@ jobs:
       id: publish
       run: |
         try {
+          Write-Host "=== Starting Publish ==="
           $publishOutput = dotnet publish ${{ env.PROJECT_FILE }} `
             -c Release `
             -r win-x64 `
@@ -110,19 +138,34 @@ jobs:
           
           if ($LASTEXITCODE -ne 0) {
             Write-Host "::error::Publish failed with exit code $LASTEXITCODE"
+            Write-Host "=== Publish Error Analysis ==="
             
-            $errorPattern = '\((\d+),(\d+)\): error (\w+): (.*?)\s+\[.*?\.csproj\]'
+            $errorPattern = '(?s)(.*?)\((\d+),(\d+)\): error (\w+): (.*?)\s+\[(.*?)\.csproj\]'
             $errors = $publishOutput | Select-String -Pattern $errorPattern -AllMatches
             
             if ($errors) {
+              $errorCount = 0
               foreach ($match in $errors.Matches) {
-                $file = $match.Context.PreContext[0] -replace '^\s*', '' -replace '\s*$', ''
-                $line = $match.Groups[1].Value
-                $column = $match.Groups[2].Value
-                $errorCode = $match.Groups[3].Value
-                $message = $match.Groups[4].Value
+                $errorCount++
+                $filePath = $match.Groups[1].Value.Trim()
+                $line = $match.Groups[2].Value
+                $column = $match.Groups[3].Value
+                $errorCode = $match.Groups[4].Value
+                $message = $match.Groups[5].Value
+                $projectFile = $match.Groups[6].Value
                 
-                Write-Host "::error file=${file},line=${line},col=${column}::${errorCode}: ${message}"
+                if (-not [System.IO.Path]::IsPathRooted($filePath)) {
+                  $filePath = Join-Path $env:GITHUB_WORKSPACE $filePath
+                }
+                
+                Write-Host "::error file=${filePath},line=${line},col=${column}::${errorCode}: ${message}"
+                Write-Host ""
+                Write-Host "PUBLISH ERROR #${errorCount}"
+                Write-Host "File:        ${filePath}"
+                Write-Host "Location:    Line ${line}, Column ${column}"
+                Write-Host "Error Code:  ${errorCode}"
+                Write-Host "Message:     ${message}"
+                Write-Host ""
               }
             } else {
               $errorLines = $publishOutput | Where-Object { $_ -match 'error' }
@@ -130,6 +173,9 @@ jobs:
                 Write-Host "::error::${line}"
               }
             }
+            
+            Write-Host "=== Full Publish Output ==="
+            $publishOutput
             
             exit $LASTEXITCODE
           }
@@ -148,6 +194,7 @@ jobs:
           build.log
           publish.log
           restore.log
+          full_build_output.txt
 
     - name: Create Release Archive
       if: success()

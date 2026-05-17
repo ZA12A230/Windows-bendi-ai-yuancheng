@@ -130,15 +130,15 @@ namespace LocalAIStudio.Views
                 await OllamaService.DownloadAndInstallAsync(progress, status, _cancellationTokenSource.Token);
                 await System.Threading.Tasks.Task.Delay(500);
                 CheckOllamaInstallation();
-                MessageBox.Show("Ollama 安装成功！", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                System.Windows.MessageBox.Show("Ollama 安装成功！", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (OperationCanceledException)
             {
-                MessageBox.Show("安装已取消。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                System.Windows.MessageBox.Show("安装已取消。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"安装失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"安装失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 OneClickDeployButton.IsEnabled = true;
                 ProgressPanel.Visibility = Visibility.Collapsed;
             }
@@ -152,7 +152,7 @@ namespace LocalAIStudio.Views
 
         private void CopyOfficialLink_Click(object sender, RoutedEventArgs e)
         {
-            Clipboard.SetText("https://ollama.com/download");
+            System.Windows.Clipboard.SetText("https://ollama.com/download");
             var originalButton = sender as Button;
             if (originalButton != null)
             {
@@ -167,7 +167,7 @@ namespace LocalAIStudio.Views
 
         private void CopyAliyunLink_Click(object sender, RoutedEventArgs e)
         {
-            Clipboard.SetText("https://mirrors.aliyun.com/ollama/windows");
+            System.Windows.Clipboard.SetText("https://mirrors.aliyun.com/ollama/windows");
             var originalButton = sender as Button;
             if (originalButton != null)
             {
@@ -274,7 +274,7 @@ namespace LocalAIStudio.Views
         {
             if (_selectedMirror == null)
             {
-                MessageBox.Show("请先选择一个镜像源", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                System.Windows.MessageBox.Show("请先选择一个镜像源", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
@@ -287,17 +287,17 @@ namespace LocalAIStudio.Views
 
                 if (success)
                 {
-                    MessageBox.Show($"镜像源配置成功！\n\n当前镜像: {_selectedMirror.Name}\n\n建议重启 Ollama 服务以确保配置生效。",
+                    System.Windows.MessageBox.Show($"镜像源配置成功！\n\n当前镜像: {_selectedMirror.Name}\n\n建议重启 Ollama 服务以确保配置生效。",
                         "成功", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 else
                 {
-                    MessageBox.Show("镜像源配置失败，请检查权限", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    System.Windows.MessageBox.Show("镜像源配置失败，请检查权限", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"配置失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"配置失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
