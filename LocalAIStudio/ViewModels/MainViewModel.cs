@@ -176,16 +176,22 @@ namespace LocalAIStudio.ViewModels
             OpenInBrowserCommand = new RelayCommand(OpenInBrowser);
             CopyLinkCommand = new RelayCommand(CopyLink);
 
-            InitializeAsync();
-        }
-
-        private async void InitializeAsync()
-        {
+            // 同步初始化基本信息
             LoadSystemInfo();
-            await LoadNetworkInfoAsync();
             LoadUserSettings();
             LoadWebsites();
-            StartMonitoring();
+            
+            // 异步初始化网络信息和启动监控
+            Task.Run(async () => 
+            {
+                await LoadNetworkInfoAsync();
+                StartMonitoring();
+            });
+        }
+
+        private async Task InitializeAsync()
+        {
+            await LoadNetworkInfoAsync();
         }
 
         private void LoadSystemInfo()

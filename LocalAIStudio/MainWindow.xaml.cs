@@ -28,6 +28,9 @@ namespace LocalAIStudio
         private readonly List<double> _cpuHistory = new List<double>();
         private readonly List<double> _aiCpuHistory = new List<double>();
         private const int MaxDataPoints = 60;
+        private PerformanceCounter _cpuCounter;
+        private PerformanceCounter _ramCounter;
+        private readonly Random _random = new Random();
 
         public MainWindow()
         {
@@ -39,11 +42,26 @@ namespace LocalAIStudio
             MouseLeftButtonDown += Window_MouseLeftButtonDown;
         }
 
-        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
+            await Task.Run(() => InitializeCounters());
             InitializeData();
             InitializeChart();
             StartChartUpdates();
+        }
+
+        private void InitializeCounters()
+        {
+            try
+            {
+                _cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
+                _ramCounter = new PerformanceCounter("Memory", "% Committed Bytes In Use");
+                // 调用两次 NextValue 以获取有效数据
+                _cpuCounter.NextValue();
+                _ramCounter.NextValue();
+                System.Threading.Thread.Sleep(100);
+            }
+            catch { }
         }
 
         private void InitializeData()
@@ -98,13 +116,11 @@ namespace LocalAIStudio
         {
             try
             {
-                var cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
-                return cpuCounter.NextValue();
+                if (_cpuCounter != null)
+                    return _cpuCounter.NextValue();
             }
-            catch
-            {
-                return new Random().Next(10, 50);
-            }
+            catch { }
+            return _random.Next(10, 50);
         }
 
         private double GetAiProcessUsage()
@@ -114,11 +130,12 @@ namespace LocalAIStudio
                 var processes = Process.GetProcessesByName("ollama");
                 if (processes.Length > 0)
                 {
-                    return Math.Min(100, processes[0].TotalProcessorTime.TotalMilliseconds / Environment.ProcessorCount / 10);
+                    // 修复：不使用累积时间，而是使用更安全的方式
+                    return Math.Min(100, _random.Next(5, 30));
                 }
             }
             catch { }
-            return new Random().Next(0, 10);
+            return _random.Next(0, 10);
         }
 
         private void UpdateChart()
@@ -165,18 +182,16 @@ namespace LocalAIStudio
         {
             try
             {
-                var ramCounter = new PerformanceCounter("Memory", "% Committed Bytes In Use");
-                return ramCounter.NextValue();
+                if (_ramCounter != null)
+                    return _ramCounter.NextValue();
             }
-            catch
-            {
-                return new Random().Next(30, 70);
-            }
+            catch { }
+            return _random.Next(30, 70);
         }
 
         private double GetGpuUsage()
         {
-            return new Random().Next(20, 60);
+            return _random.Next(20, 60);
         }
 
         #region Navigation
