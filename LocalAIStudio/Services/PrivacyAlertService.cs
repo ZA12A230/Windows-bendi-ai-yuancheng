@@ -22,6 +22,7 @@ namespace LocalAIStudio.Services
         private bool _isCameraActive = false;
         private bool _isMicrophoneActive = false;
         private bool _isRemoteAccessActive = false;
+        private bool _initialized = false;
 
         public event EventHandler DisconnectRequested;
         public event EventHandler<string> LogMessage;
@@ -32,7 +33,7 @@ namespace LocalAIStudio.Services
             set
             {
                 _isCameraActive = value;
-                UpdateIcon();
+                if (_initialized) UpdateIcon();
             }
         }
 
@@ -42,7 +43,7 @@ namespace LocalAIStudio.Services
             set
             {
                 _isMicrophoneActive = value;
-                UpdateIcon();
+                if (_initialized) UpdateIcon();
             }
         }
 
@@ -52,17 +53,19 @@ namespace LocalAIStudio.Services
             set
             {
                 _isRemoteAccessActive = value;
-                UpdateIcon();
+                if (_initialized) UpdateIcon();
             }
         }
 
         public PrivacyAlertService()
         {
-            InitializeNotifyIcon();
+            // 不在构造函数中初始化，延迟到 StartMonitoring
         }
 
         private void InitializeNotifyIcon()
         {
+            if (_initialized) return;
+
             try
             {
                 _contextMenu = new ContextMenuStrip();
@@ -82,6 +85,7 @@ namespace LocalAIStudio.Services
                 };
 
                 _notifyIcon.DoubleClick += (s, e) => ShowMainWindow();
+                _initialized = true;
             }
             catch (Exception ex)
             {
@@ -337,11 +341,28 @@ namespace LocalAIStudio.Services
 
         public void StartMonitoring()
         {
-            _isMonitoring = true;
-            HardwareMonitorService.Instance.CameraStateChanged += OnCameraStateChanged;
-            HardwareMonitorService.Instance.MicrophoneActiveChanged += OnMicrophoneStateChanged;
-            HardwareMonitorService.Instance.RemoteAccessStarted += OnRemoteAccessStarted;
-            HardwareMonitorService.Instance.RemoteAccessStopped += OnRemoteAccessStopped;
+            try
+            {
+                // 先初始化通知图标
+                InitializeNotifyIcon();
+                _isMonitoring = true;
+                
+                try
+                {
+                    HardwareMonitorService.Instance.CameraStateChanged += OnCameraStateChanged;
+                    HardwareMonitorService.Instance.MicrophoneActiveChanged += OnMicrophoneStateChanged;
+                    HardwareMonitorService.Instance.RemoteAccessStarted += OnRemoteAccessStarted;
+                    HardwareMonitorService.Instance.RemoteAccessStopped += OnRemoteAccessStopped;
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"订阅硬件监控事件失败: {ex.Message}");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"启动隐私监控失败: {ex.Message}");
+            }
         }
 
         public void StopMonitoring()

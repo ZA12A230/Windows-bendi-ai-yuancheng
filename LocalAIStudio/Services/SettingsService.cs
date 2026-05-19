@@ -15,9 +15,24 @@ namespace LocalAIStudio.Services
         public static SettingsService Instance => _instance.Value;
         #endregion
 
-        private readonly string _appPath = Process.GetCurrentProcess().MainModule.FileName ?? string.Empty;
-        private readonly string _appName = Process.GetCurrentProcess().ProcessName;
+        private string _appPath;
+        private string _appName;
         private CancellationTokenSource _monitoringTokenSource;
+        
+        public SettingsService()
+        {
+            try
+            {
+                var process = Process.GetCurrentProcess();
+                _appPath = process.MainModule?.FileName ?? string.Empty;
+                _appName = process.ProcessName;
+            }
+            catch
+            {
+                _appPath = string.Empty;
+                _appName = "LocalAIStudio";
+            }
+        }
 
         public bool AutoStartEnabled
         {

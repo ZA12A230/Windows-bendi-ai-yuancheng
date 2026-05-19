@@ -424,7 +424,8 @@ namespace LocalAIStudio.Services
                 using var key = Registry.CurrentUser.OpenSubKey(@"Software\LocalAIStudio\Settings", false);
                 if (key != null)
                 {
-                    return Convert.ToInt32(key.GetValue("SilentStart", 0)) == 1;
+                    var value = key.GetValue("SilentStart", 0);
+                    return Convert.ToInt32(value) == 1;
                 }
             }
             catch (Exception ex)
